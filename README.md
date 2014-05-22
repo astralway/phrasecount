@@ -19,7 +19,7 @@ Running Mini Instance
 
 If you do not have Accumulo, Hadoop, Zookeeper, and Accismus setup, then you
 can start an MiniAccismus instance with the following command.  This command
-will create an `accismus.properties` that can be used by the following command
+will create an `accismus.properties` that can be used by the following commands
 in this example.
 
 ```
