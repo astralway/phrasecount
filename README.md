@@ -1,13 +1,11 @@
-Phrase Count`
+Phrase Count
 ============
 
-An example application that computes phrase counts using Accismus. This example
-works on documents and tracks their location.  If the contents of a document at
-a location change, then this may cause the phrase counts to update.  Duplicate
-documents are ignored.  For example if two locations have the same content,
-then that will only cause the phrase counts to update once.  When a unique
-document is no longer referenced by any URI, then the global phrase counts will
-be decremented appropriately.
+An example application that computes phrase counts for unique documents using
+Accismus. Each new unique document that is added causes phrase counts to be
+incremented. Unique documents have reference counts based on the number of
+locations that point to them.  When a unique document is no longer referenced
+by any location, then the phrase counts will be decremented appropriately.  
 
 After cloning this repo, build with following command.  May need to install
 Accismus into your local maven repo first.
@@ -55,7 +53,7 @@ The print command will print out the number of unique documents and the number
 of processed documents.  If the number of processed documents is less than the
 number of unique documents, then there is still work to do.  After the load
 command runs, the documents will have been added or updated.  However the
-counts will not update until the Observer runs in the background. 
+phrase counts will not update until the Observer runs in the background. 
 
 
 Deploying example
