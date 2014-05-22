@@ -73,7 +73,9 @@ lines with the following:
 accismus.worker.observer.0=index,check,,phrasecount.DocumentIndexer
 ```
 
-Now initialize and start Accismus as outlined in its docs.  The following shows
+Now initialize and start Accismus as outlined in its docs. Once started the
+load and print commands above can be run passing in
+`$ACCISMUS_HOME/conf/accismus.properties`
 
 Generating data
 ---------------
