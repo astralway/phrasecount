@@ -8,10 +8,8 @@ import java.io.FileWriter;
 import java.io.Writer;
 import java.util.Collections;
 
-import org.apache.accumulo.minicluster.MemoryUnit;
 import org.apache.accumulo.minicluster.MiniAccumuloCluster;
 import org.apache.accumulo.minicluster.MiniAccumuloConfig;
-import org.apache.accumulo.minicluster.ServerType;
 
 import phrasecount.DocumentIndexer;
 import accismus.api.Admin;
@@ -28,7 +26,12 @@ public class Mini {
     }
 
     MiniAccumuloConfig cfg = new MiniAccumuloConfig(new File(args[0]), new String("secret"));
-    cfg.setMemory(ServerType.TABLET_SERVER, 2, MemoryUnit.GIGABYTE);
+    // cfg.setMemory(ServerType.TABLET_SERVER, 2, MemoryUnit.GIGABYTE);
+    // Map<String,String> site = new HashMap<String,String>();
+    // site.put(Property.TSERV_DATACACHE_SIZE.getKey(), "768M");
+    // site.put(Property.TSERV_INDEXCACHE_SIZE.getKey(), "256M");
+    // cfg.setSiteConfig(site);
+
     MiniAccumuloCluster cluster = new MiniAccumuloCluster(cfg);
     cluster.start();
 

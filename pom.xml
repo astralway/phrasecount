@@ -32,6 +32,11 @@
     	<artifactId>accumulo-minicluster</artifactId>
     	<version>${accumulo.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.accumulo</groupId>
+      <artifactId>accumulo-core</artifactId>
+      <version>${accumulo.version}</version>
+    </dependency>
   </dependencies>
 
 </project>
