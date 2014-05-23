@@ -1,17 +1,20 @@
 package phrasecount.cmd;
 
+import static phrasecount.Constants.TYPEL;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.Writer;
 import java.util.Collections;
 
+import org.apache.accumulo.minicluster.MemoryUnit;
 import org.apache.accumulo.minicluster.MiniAccumuloCluster;
 import org.apache.accumulo.minicluster.MiniAccumuloConfig;
+import org.apache.accumulo.minicluster.ServerType;
 
 import phrasecount.DocumentIndexer;
 import accismus.api.Admin;
-import accismus.api.Column;
 import accismus.api.config.AccismusProperties;
 import accismus.api.config.InitializationProperties;
 import accismus.api.test.MiniAccismus;
@@ -25,6 +28,7 @@ public class Mini {
     }
 
     MiniAccumuloConfig cfg = new MiniAccumuloConfig(new File(args[0]), new String("secret"));
+    cfg.setMemory(ServerType.TABLET_SERVER, 2, MemoryUnit.GIGABYTE);
     MiniAccumuloCluster cluster = new MiniAccumuloCluster(cfg);
     cluster.start();
 
@@ -38,7 +42,7 @@ public class Mini {
     InitializationProperties props = new InitializationProperties(aprops);
     props.setAccumuloTable("data");
     props.setNumThreads(5);
-    props.setObservers(Collections.singletonMap(new Column("index", "check"), DocumentIndexer.class.getName()));
+    props.setObservers(Collections.singletonMap(TYPEL.newColumn("index", "check"), DocumentIndexer.class.getName()));
 
     Admin.initialize(props);
 

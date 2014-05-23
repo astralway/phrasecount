@@ -3,10 +3,10 @@ package phrasecount.cmd;
 import java.io.File;
 import java.util.Map.Entry;
 
-import org.apache.accumulo.core.data.ArrayByteSequence;
 import org.apache.accumulo.core.data.ByteSequence;
 import org.apache.accumulo.core.data.Range;
 
+import phrasecount.Constants;
 import accismus.api.Column;
 import accismus.api.ColumnIterator;
 import accismus.api.RowIterator;
@@ -17,10 +17,10 @@ import accismus.api.config.AccismusProperties;
 
 public class Print {
 
-  private static int count(Snapshot snap, String prefix, String cf, String cq) throws Exception {
+  private static int count(Snapshot snap, String prefix, Column col) throws Exception {
     ScannerConfiguration scanConfig = new ScannerConfiguration();
     scanConfig.setRange(Range.prefix(prefix));
-    scanConfig.fetchColumn(new ArrayByteSequence(cf), new ArrayByteSequence(cq));
+    scanConfig.fetchColumn(col.getFamily(), col.getQualifier());
 
     int count = 0;
 
@@ -45,8 +45,8 @@ public class Print {
     try {
       ScannerConfiguration scanConfig = new ScannerConfiguration();
       scanConfig.setRange(Range.prefix("phrase:"));
-      scanConfig.fetchColumn(new ArrayByteSequence("stat"), new ArrayByteSequence("sum"));
-      scanConfig.fetchColumn(new ArrayByteSequence("stat"), new ArrayByteSequence("docCount"));
+      scanConfig.fetchColumn(Constants.STAT_SUM_COL.getFamily(), Constants.STAT_SUM_COL.getQualifier());
+      scanConfig.fetchColumn(Constants.STAT_DOC_COUNT_COL.getFamily(), Constants.STAT_DOC_COUNT_COL.getQualifier());
 
       //TODO make TypedSnapshot support this
       RowIterator riter = snap.get(scanConfig);
@@ -72,9 +72,9 @@ public class Print {
       }
 
       // TODO could precompute this using observers
-      int uriCount = count(snap, "uri:", "doc", "hash");
-      int documentCount = count(snap, "doc:", "doc", "refCount");
-      int numIndexedDocs = count(snap, "doc:", "index", "status");
+      int uriCount = count(snap, "uri:", Constants.DOC_HASH_COL);
+      int documentCount = count(snap, "doc:", Constants.DOC_REF_COUNT_COL);
+      int numIndexedDocs = count(snap, "doc:", Constants.INDEX_STATUS_COL);
 
       System.out.println();
       System.out.printf("# uris                : %,d\n", uriCount);

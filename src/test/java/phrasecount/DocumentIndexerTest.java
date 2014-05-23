@@ -1,5 +1,12 @@
 package phrasecount;
 
+import static phrasecount.Constants.DOC_CONTENT_COL;
+import static phrasecount.Constants.DOC_REF_COUNT_COL;
+import static phrasecount.Constants.INDEX_CHECK_COL;
+import static phrasecount.Constants.STAT_DOC_COUNT_COL;
+import static phrasecount.Constants.STAT_SUM_COL;
+import static phrasecount.Constants.TYPEL;
+
 import java.util.Collections;
 import java.util.Map;
 
@@ -19,9 +26,8 @@ import accismus.api.SnapshotFactory;
 import accismus.api.config.InitializationProperties;
 import accismus.api.config.LoaderExecutorProperties;
 import accismus.api.test.MiniAccismus;
-import accismus.api.types.StringEncoder;
 import accismus.api.types.TypedSnapshot;
-import accismus.api.types.TypedSnapshot.BytesDecoder;
+import accismus.api.types.TypedSnapshot.Value;
 
 import com.google.common.collect.Sets;
 
@@ -50,7 +56,7 @@ public class DocumentIndexerTest {
     props.setZookeepers(cluster.getZooKeepers());
     props.setAccumuloTable("data");
     props.setNumThreads(5);
-    props.setObservers(Collections.singletonMap(new Column("index", "check"), DocumentIndexer.class.getName()));
+    props.setObservers(Collections.singletonMap(INDEX_CHECK_COL, DocumentIndexer.class.getName()));
 
     Admin.initialize(props);
 
@@ -87,12 +93,15 @@ public class DocumentIndexerTest {
 
   private PhraseInfo getPhraseInfo(SnapshotFactory snapFact, String phrase) throws Exception {
 
-    TypedSnapshot tsnap = new TypedSnapshot(snapFact.createSnapshot(), new StringEncoder());
-    Map<Column,BytesDecoder> map = tsnap.getd("phrase:" + phrase, Sets.newHashSet(new Column("stat", "sum"), new Column("stat", "docCount")));
+    TypedSnapshot tsnap = TYPEL.snapshot(snapFact);
+    Map<Column,Value> map = tsnap.getd("phrase:" + phrase, Sets.newHashSet(STAT_SUM_COL, STAT_DOC_COUNT_COL));
+
+    if (map.size() == 0)
+      return null;
 
     PhraseInfo pi = new PhraseInfo();
-    pi.sum = map.get(new Column("stat", "sum")).toInteger();
-    pi.numDocs = map.get(new Column("stat", "docCount")).toInteger();
+    pi.sum = map.get(STAT_SUM_COL).toInteger();
+    pi.numDocs = map.get(STAT_DOC_COUNT_COL).toInteger();
 
     return pi;
   }
@@ -136,30 +145,30 @@ public class DocumentIndexerTest {
 
     Assert.assertEquals(new PhraseInfo(1, 1), getPhraseInfo(snapFact, "the test is over"));
     Assert.assertEquals(new PhraseInfo(1, 1), getPhraseInfo(snapFact, "is only a test"));
-    Assert.assertEquals(new PhraseInfo(0, 0), getPhraseInfo(snapFact, "test do not panic"));
+    Assert.assertNull(getPhraseInfo(snapFact, "test do not panic"));
 
     // change content of foo2, should not change anything
     loadDocument(le, "/foo2", "The test is over, for now.");
 
     Assert.assertEquals(new PhraseInfo(1, 1), getPhraseInfo(snapFact, "the test is over"));
     Assert.assertEquals(new PhraseInfo(1, 1), getPhraseInfo(snapFact, "is only a test"));
-    Assert.assertEquals(new PhraseInfo(0, 0), getPhraseInfo(snapFact, "test do not panic"));
+    Assert.assertNull(getPhraseInfo(snapFact, "test do not panic"));
 
     String oldHash = new Document("/foo3", "This is only a test").getHash();
-    TypedSnapshot tsnap = new TypedSnapshot(snapFact.createSnapshot(), new StringEncoder());
-    Assert.assertNotNull(tsnap.getd("doc:" + oldHash, new Column("doc", "content")).toString());
-    Assert.assertEquals(1, tsnap.getd("doc:" + oldHash, new Column("doc", "refCount")).toInteger(0));
+    TypedSnapshot tsnap = TYPEL.snapshot(snapFact);
+    Assert.assertNotNull(tsnap.get().row("doc:" + oldHash).col(DOC_CONTENT_COL).toString());
+    Assert.assertEquals(1, tsnap.get().row("doc:" + oldHash).col(DOC_REF_COUNT_COL).toInteger(0));
 
     // dereference document that foo3 was referencing
     loadDocument(le, "/foo3", "The test is over, for now.");
 
     Assert.assertEquals(new PhraseInfo(1, 1), getPhraseInfo(snapFact, "the test is over"));
-    Assert.assertEquals(new PhraseInfo(0, 0), getPhraseInfo(snapFact, "is only a test"));
-    Assert.assertEquals(new PhraseInfo(0, 0), getPhraseInfo(snapFact, "test do not panic"));
+    Assert.assertNull(getPhraseInfo(snapFact, "is only a test"));
+    Assert.assertNull(getPhraseInfo(snapFact, "test do not panic"));
 
-    tsnap = new TypedSnapshot(snapFact.createSnapshot(), new StringEncoder());
-    Assert.assertNull(tsnap.getd("doc:" + oldHash, new Column("doc", "content")).toString());
-    Assert.assertNull(tsnap.getd("doc:" + oldHash, new Column("doc", "refCount")).toInteger());
+    tsnap = TYPEL.snapshot(snapFact);
+    Assert.assertNull(tsnap.get().row("doc:" + oldHash).col(DOC_CONTENT_COL).toString());
+    Assert.assertNull(tsnap.get().row("doc:" + oldHash).col(DOC_REF_COUNT_COL).toInteger());
 
     le.shutdown();
     snapFact.close();
