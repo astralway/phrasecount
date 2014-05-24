@@ -7,15 +7,19 @@ import static phrasecount.Constants.STAT_DOC_COUNT_COL;
 import static phrasecount.Constants.STAT_SUM_COL;
 import static phrasecount.Constants.TYPEL;
 
+import java.util.ArrayList;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.apache.accumulo.core.data.ByteSequence;
 
 import accismus.api.Column;
 import accismus.api.Observer;
 import accismus.api.Transaction;
+import accismus.api.types.TypedSnapshot.Value;
 import accismus.api.types.TypedTransaction;
+
+import com.google.common.collect.Sets;
 
 public class DocumentIndexer implements Observer {
 
@@ -62,13 +66,29 @@ public class DocumentIndexer implements Observer {
     // this makes the assumption that the implementation of getPhrases is invariant. This is probably a bad assumption. A possible way to make this more robust
     // is to store the output of getPhrases when indexing and use the stored output when unindexing. Alternatively, could store the version of Document used for
     // indexing.
-    Set<Entry<String,Integer>> phrases = new Document(null, content).getPhrases().entrySet();
+    Map<String,Integer> phrases = new Document(null, content).getPhrases();
 
-    for (Entry<String,Integer> entry : phrases) {
+    ArrayList<String> rows = new ArrayList<String>(phrases.size());
+
+    for (String phrase : phrases.keySet()) {
+      String phraseRow = "phrase:" + phrase;
+      rows.add(phraseRow);
+    }
+
+    Map<String,Map<Column,Value>> storedPhrases = ttx.getd(rows, Sets.newHashSet(STAT_SUM_COL, STAT_DOC_COUNT_COL));
+
+    for (Entry<String,Integer> entry : phrases.entrySet()) {
       String phrase = entry.getKey();
       String phraseRow = "phrase:" + phrase;
-      Integer sum = ttx.get().row(phraseRow).col(STAT_SUM_COL).toInteger(0);
-      Integer docCount = ttx.get().row(phraseRow).col(STAT_DOC_COUNT_COL).toInteger(0);
+
+      int sum = 0;
+      int docCount = 0;
+
+      Map<Column,Value> columns = storedPhrases.get(phraseRow);
+      if (columns != null) {
+        sum = columns.get(STAT_SUM_COL).toInteger();
+        docCount = columns.get(STAT_DOC_COUNT_COL).toInteger();
+      }
 
       int newSum = sum + multiplier * entry.getValue();
       int newDocCount = docCount + multiplier * 1;
