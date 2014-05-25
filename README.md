@@ -7,6 +7,27 @@ incremented. Unique documents have reference counts based on the number of
 locations that point to them.  When a unique document is no longer referenced
 by any location, then the phrase counts will be decremented appropriately.  
 
+Schema
+------
+
+This example uses the following schema.   This schema does not handle high
+cardinality phrases very well.  One possible way to handle this would be to set
+a random column on high cardinality phrases and also set a weak notification.
+Weak notification are not supported yet in Accismus.
+
+Row                         | Column          | Value             | Purpose
+----------------------------|-----------------|-------------------|---------------------------------------------------------------------
+uri:<uri>                   | doc:hash        | <sha1 hash>       | Contains the hash of the document found at the URI
+doc:<sha1 hash of document> | doc:content     | <document>        | The contents of the document
+doc:<sha1 hash of document> | doc:refCount    | <int>             | The number of URIs that reference this document 
+doc:<sha1 hash of document> | index:check     | ''                | Setting this columns triggers the observer that indexes the document 
+doc:<sha1 hash of document> | index:status    | INDEXED|''        | Used to track the status of wether this document was indexed 
+phrase:<4 word phrase>      | stat:sum        | <int>             | Total number of times the phrase was seen in all documents
+phrase:<4 word phrase>      | stat:docCount   | <int>             | Total number of documents the phrase occurred in
+
+Building
+--------
+
 After cloning this repo, build with following command.  May need to install
 Accismus into your local maven repo first.
 
