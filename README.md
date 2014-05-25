@@ -15,15 +15,15 @@ cardinality phrases very well.  One possible way to handle this would be to set
 a random column on high cardinality phrases and also set a weak notification.
 Weak notification are not supported yet in Accismus.
 
-Row                         | Column          | Value             | Purpose
-----------------------------|-----------------|-------------------|---------------------------------------------------------------------
-uri:<uri>                   | doc:hash        | <sha1 hash>       | Contains the hash of the document found at the URI
-doc:<sha1 hash of document> | doc:content     | <document>        | The contents of the document
-doc:<sha1 hash of document> | doc:refCount    | <int>             | The number of URIs that reference this document 
-doc:<sha1 hash of document> | index:check     | ''                | Setting this columns triggers the observer that indexes the document 
-doc:<sha1 hash of document> | index:status    | INDEXED|''        | Used to track the status of wether this document was indexed 
-phrase:<4 word phrase>      | stat:sum        | <int>             | Total number of times the phrase was seen in all documents
-phrase:<4 word phrase>      | stat:docCount   | <int>             | Total number of documents the phrase occurred in
+Row                               | Column          | Value             | Purpose
+----------------------------------|-----------------|-------------------|---------------------------------------------------------------------
+uri:&lt;uri&gt;                   | doc:hash        | &lt;sha1 hash&gt; | Contains the hash of the document found at the URI
+doc:&lt;sha1 hash of document&gt; | doc:content     | &lt;document&gt;  | The contents of the document
+doc:&lt;sha1 hash of document&gt; | doc:refCount    | &lt;int&gt;       | The number of URIs that reference this document 
+doc:&lt;sha1 hash of document&gt; | index:check     | ''                | Setting this columns triggers the observer that indexes the document 
+doc:&lt;sha1 hash of document&gt; | index:status    | INDEXED|''        | Used to track the status of wether this document was indexed 
+phrase:&lt;4 word phrase&gt;      | stat:sum        | &lt;int&gt;       | Total number of times the phrase was seen in all documents
+phrase:&lt;4 word phrase&gt;      | stat:docCount   | &lt;int&gt;       | Total number of documents the phrase occurred in
 
 Building
 --------
@@ -47,7 +47,7 @@ in this example.
 mvn exec:java -Dexec.mainClass=phrasecount.cmd.Mini -Dexec.args="/tmp/mac accismus.properties" -Dexec.classpathScope=test 
 ```
 
-After the mini command prints out `Wrote : <accismus.properties>` then its ready to use. 
+After the mini command prints out `Wrote : accismus.properties` then its ready to use. 
 
 
 Adding documents
