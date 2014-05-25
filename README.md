@@ -15,15 +15,15 @@ cardinality phrases very well.  One possible way to handle this would be to set
 a random column on high cardinality phrases and also set a weak notification.
 Weak notification are not supported yet in Accismus.
 
-Row                               | Column          | Value             | Purpose
-----------------------------------|-----------------|-------------------|---------------------------------------------------------------------
-uri:&lt;uri&gt;                   | doc:hash        | &lt;sha1 hash&gt; | Contains the hash of the document found at the URI
-doc:&lt;sha1 hash of document&gt; | doc:content     | &lt;document&gt;  | The contents of the document
-doc:&lt;sha1 hash of document&gt; | doc:refCount    | &lt;int&gt;       | The number of URIs that reference this document 
-doc:&lt;sha1 hash of document&gt; | index:check     | ''                | Setting this columns triggers the observer that indexes the document 
-doc:&lt;sha1 hash of document&gt; | index:status    | INDEXED|''        | Used to track the status of wether this document was indexed 
-phrase:&lt;4 word phrase&gt;      | stat:sum        | &lt;int&gt;       | Total number of times the phrase was seen in all documents
-phrase:&lt;4 word phrase&gt;      | stat:docCount   | &lt;int&gt;       | Total number of documents the phrase occurred in
+Row                   | Column          | Value             | Purpose
+----------------------|-----------------|-------------------|---------------------------------------------------------------------
+uri:&lt;uri&gt;       | doc:hash        | &lt;hash&gt;      | Contains the hash of the document found at the URI
+doc:&lt;hash&gt;      | doc:content     | &lt;document&gt;  | The contents of the document
+doc:&lt;hash&gt;      | doc:refCount    | &lt;int&gt;       | The number of URIs that reference this document 
+doc:&lt;hash&gt;      | index:check     | ''                | Setting this columns triggers the observer that indexes the document 
+doc:&lt;hash&gt;      | index:status    | INDEXED|''        | Used to track the status of wether this document was indexed 
+phrase:&lt;phrase&gt; | stat:sum        | &lt;int&gt;       | Total number of times the phrase was seen in all documents
+phrase:&lt;phrase&gt; | stat:docCount   | &lt;int&gt;       | Total number of documents the phrase occurred in
 
 Building
 --------
