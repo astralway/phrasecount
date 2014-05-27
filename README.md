@@ -20,8 +20,8 @@ Row                   | Column          | Value             | Purpose
 uri:&lt;uri&gt;       | doc:hash        | &lt;hash&gt;      | Contains the hash of the document found at the URI
 doc:&lt;hash&gt;      | doc:content     | &lt;document&gt;  | The contents of the document
 doc:&lt;hash&gt;      | doc:refCount    | &lt;int&gt;       | The number of URIs that reference this document 
-doc:&lt;hash&gt;      | index:check     | ''                | Setting this columns triggers the observer that indexes the document 
-doc:&lt;hash&gt;      | index:status    | INDEXED|''        | Used to track the status of wether this document was indexed 
+doc:&lt;hash&gt;      | index:check     | empty             | Setting this columns triggers the observer that indexes the document 
+doc:&lt;hash&gt;      | index:status    | INDEXED or empty  | Used to track the status of wether this document was indexed 
 phrase:&lt;phrase&gt; | stat:sum        | &lt;int&gt;       | Total number of times the phrase was seen in all documents
 phrase:&lt;phrase&gt; | stat:docCount   | &lt;int&gt;       | Total number of documents the phrase occurred in
 
