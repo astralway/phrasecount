@@ -19,6 +19,9 @@ public class DocumentLoader implements Loader {
   
   public void load(Transaction tx) throws Exception {
 
+    // TODO need a strategy for dealing w/ large documents. If a worker processes many large documents concurrently it could cause memory exhaustion. . Could
+    // large documents up into pieces, however not sure if the example should be complicated w/ this.
+
     TypedTransaction ttx = TYPEL.transaction(tx);
     String storedHash = ttx.get().row("uri:" + document.getURI()).col(DOC_HASH_COL).toString();
 
@@ -47,7 +50,7 @@ public class DocumentLoader implements Loader {
     // 0->1
     // 1->0
     if (rc == 0 || rc == 1)
-      tx.set().row("doc:" + hash).col(INDEX_CHECK_COL).val(); // setting this triggers the indexing observer
+      tx.set().row("doc:" + hash).col(INDEX_CHECK_COL).val(); // setting this triggers the phrase counting observer
   }
 
   private void decrementRefCount(TypedTransaction tx, String hash) throws Exception {

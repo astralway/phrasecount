@@ -56,7 +56,7 @@ public class DocumentIndexerTest {
     props.setZookeepers(cluster.getZooKeepers());
     props.setAccumuloTable("data");
     props.setNumThreads(5);
-    props.setObservers(Collections.singletonMap(INDEX_CHECK_COL, DocumentIndexer.class.getName()));
+    props.setObservers(Collections.singletonMap(INDEX_CHECK_COL, PhraseCounter.class.getName()));
 
     Admin.initialize(props);
 

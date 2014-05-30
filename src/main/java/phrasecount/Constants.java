@@ -15,4 +15,8 @@ public class Constants {
   public static final Column DOC_REF_COUNT_COL = TYPEL.newColumn("doc", "refCount");
   public static final Column STAT_DOC_COUNT_COL = TYPEL.newColumn("stat", "docCount");
   public static final Column STAT_SUM_COL = TYPEL.newColumn("stat", "sum");
+  public static final Column EXPORT_CHECK_COL = TYPEL.newColumn("export", "check");
+  public static final Column EXPORT_DOC_COUNT_COL = TYPEL.newColumn("export", "docCount");
+  public static final Column EXPORT_SEQ_COL = TYPEL.newColumn("export", "seq");
+  public static final Column EXPORT_SUM_COL = TYPEL.newColumn("export", "sum");
 }
