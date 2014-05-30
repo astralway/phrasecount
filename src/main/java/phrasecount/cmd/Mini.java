@@ -33,11 +33,11 @@ public class Mini {
     }
 
     MiniAccumuloConfig cfg = new MiniAccumuloConfig(new File(args[0]), new String("secret"));
-    cfg.setMemory(ServerType.TABLET_SERVER, 2, MemoryUnit.GIGABYTE);
-    Map<String,String> site = new HashMap<String,String>();
-    site.put(Property.TSERV_DATACACHE_SIZE.getKey(), "768M");
-    site.put(Property.TSERV_INDEXCACHE_SIZE.getKey(), "256M");
-    cfg.setSiteConfig(site);
+    //cfg.setMemory(ServerType.TABLET_SERVER, 2, MemoryUnit.GIGABYTE);
+    //Map<String,String> site = new HashMap<String,String>();
+    //site.put(Property.TSERV_DATACACHE_SIZE.getKey(), "768M");
+    //site.put(Property.TSERV_INDEXCACHE_SIZE.getKey(), "256M");
+    //cfg.setSiteConfig(site);
 
     MiniAccumuloCluster cluster = new MiniAccumuloCluster(cfg);
     cluster.start();
@@ -51,7 +51,7 @@ public class Mini {
 
     InitializationProperties props = new InitializationProperties(aprops);
     props.setAccumuloTable("data");
-    props.setNumThreads(40);
+    props.setNumThreads(5);
 
     Map<Column,String> observers = new HashMap<Column,String>();
     observers.put(INDEX_CHECK_COL, PhraseCounter.class.getName());
