@@ -53,7 +53,7 @@ import com.google.common.collect.Sets;
  */
 public class PhraseExporter implements Observer {
 
-
+  // TODO this needs test
   public void process(Transaction tx, ByteSequence row, Column col) throws Exception {
     TypedTransaction ttx = TYPEL.transaction(tx);
     
@@ -79,7 +79,8 @@ public class PhraseExporter implements Observer {
     } else {
       ttx.delete(row, EXPORT_SUM_COL);
       ttx.delete(row, EXPORT_DOC_COUNT_COL);
-      ttx.delete(row, EXPORT_CHECK_COL);
+      // TODO modifying trigger is broken
+      // ttx.delete(row, EXPORT_CHECK_COL);
     }
 
     ttx.set().row(row).col(EXPORT_SEQ_COL).val(seqNum + 1);

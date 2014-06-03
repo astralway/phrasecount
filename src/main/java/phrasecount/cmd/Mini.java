@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.Writer;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.accumulo.core.conf.Property;
@@ -24,20 +25,50 @@ import accismus.api.config.AccismusProperties;
 import accismus.api.config.InitializationProperties;
 import accismus.api.test.MiniAccismus;
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterException;
+
+
 public class Mini {
+
+  static class Parameters {
+    @Parameter(names = {"-m", "--moreMemory"}, description = "Use more memory")
+    boolean moreMemory = false;
+
+    @Parameter(names = {"-w", "--workerThreads"}, description = "Number of worker threads")
+    int workerThreads = 5;
+
+    @Parameter(names = {"-z", "--zookeeperPort"}, description = "Port to use for zookeeper")
+    int zookeeperPort = 0;
+
+    @Parameter(description = "<MAC dir> <output props file>")
+    List<String> args;
+  }
+
   public static void main(String[] args) throws Exception {
 
-    if (args.length != 2) {
-      System.err.println("Usage : " + Mini.class.getName() + " <MAC dir> <output props file>");
+    Parameters params = new Parameters();
+    JCommander jc = new JCommander(params);
+
+    try {
+      jc.parse(args);
+    } catch (ParameterException pe) {
+      System.out.println(pe.getMessage());
+      jc.setProgramName(Mini.class.getSimpleName());
+      jc.usage();
       System.exit(-1);
     }
 
-    MiniAccumuloConfig cfg = new MiniAccumuloConfig(new File(args[0]), new String("secret"));
-    //cfg.setMemory(ServerType.TABLET_SERVER, 2, MemoryUnit.GIGABYTE);
-    //Map<String,String> site = new HashMap<String,String>();
-    //site.put(Property.TSERV_DATACACHE_SIZE.getKey(), "768M");
-    //site.put(Property.TSERV_INDEXCACHE_SIZE.getKey(), "256M");
-    //cfg.setSiteConfig(site);
+    MiniAccumuloConfig cfg = new MiniAccumuloConfig(new File(params.args.get(0)), new String("secret"));
+    cfg.setZooKeeperPort(params.zookeeperPort);
+    if (params.moreMemory) {
+      cfg.setMemory(ServerType.TABLET_SERVER, 2, MemoryUnit.GIGABYTE);
+      Map<String,String> site = new HashMap<String,String>();
+      site.put(Property.TSERV_DATACACHE_SIZE.getKey(), "768M");
+      site.put(Property.TSERV_INDEXCACHE_SIZE.getKey(), "256M");
+      cfg.setSiteConfig(site);
+    }
 
     MiniAccumuloCluster cluster = new MiniAccumuloCluster(cfg);
     cluster.start();
@@ -51,7 +82,7 @@ public class Mini {
 
     InitializationProperties props = new InitializationProperties(aprops);
     props.setAccumuloTable("data");
-    props.setNumThreads(5);
+    props.setNumThreads(params.workerThreads);
 
     Map<Column,String> observers = new HashMap<Column,String>();
     observers.put(INDEX_CHECK_COL, PhraseCounter.class.getName());
@@ -63,11 +94,11 @@ public class Mini {
     MiniAccismus miniAccismus = new MiniAccismus(props);
     miniAccismus.start();
 
-    Writer fw = new BufferedWriter(new FileWriter(new File(args[1])));
+    Writer fw = new BufferedWriter(new FileWriter(new File(params.args.get(1))));
     aprops.store(fw, null);
     fw.close();
 
     System.out.println();
-    System.out.println("Wrote : " + args[1]);
+    System.out.println("Wrote : " + params.args.get(1));
   }
 }

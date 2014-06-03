@@ -49,7 +49,8 @@ public class PhraseCounter implements Observer {
       deleteDocument(ttx, row);
     }
 
-    tx.delete(row, col);
+    // TODO modifying the trigger is currently broken, enable more than one observer to commit for a notification
+    // tx.delete(row, col);
 
   }
 
