@@ -9,6 +9,10 @@ import accismus.api.Loader;
 import accismus.api.Transaction;
 import accismus.api.types.TypedTransaction;
 
+/**
+ * Executes document load transactions which dedupe and reference count documents.  IF needed, the observer that updates phrase counts is triggered.
+ */
+
 public class DocumentLoader implements Loader {
 
   private Document document;

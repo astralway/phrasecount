@@ -47,6 +47,8 @@ import com.google.common.collect.Sets;
  * </UL>
  * 
  * The export function should be idempotent, it should be ok to run it multiple times w/ the same inputs.
+ *
+ * If the phrase counts have changed while the export was in progress, then this observer will trigger itself.
  * 
  */
 public class PhraseExporter implements Observer {

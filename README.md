@@ -22,8 +22,12 @@ doc:&lt;hash&gt;      | doc:content     | &lt;document&gt;  | The contents of th
 doc:&lt;hash&gt;      | doc:refCount    | &lt;int&gt;       | The number of URIs that reference this document 
 doc:&lt;hash&gt;      | index:check     | empty             | Setting this columns triggers the observer that indexes the document 
 doc:&lt;hash&gt;      | index:status    | INDEXED or empty  | Used to track the status of wether this document was indexed 
-phrase:&lt;phrase&gt; | stat:sum        | &lt;int&gt;       | Total number of times the phrase was seen in all documents
 phrase:&lt;phrase&gt; | stat:docCount   | &lt;int&gt;       | Total number of documents the phrase occurred in
+phrase:&lt;phrase&gt; | stat:sum        | &lt;int&gt;       | Total number of times the phrase was seen in all documents
+phrase:&lt;phrase&gt; | export:check    | empty             | Triggers export observer
+phrase:&lt;phrase&gt; | export:docCount | &lt;int&gt;       | Phrase docCount queued for export
+phrase:&lt;phrase&gt; | export:seq      | &lt;int&gt;       | A sequence number used to order exports, as they may arrive out of order.
+phrase:&lt;phrase&gt; | export:sum      | &lt;int&gt;       | Phrase sum queued for export
 
 Building
 --------

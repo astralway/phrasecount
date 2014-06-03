@@ -24,6 +24,10 @@ import accismus.api.types.TypedTransaction;
 
 import com.google.common.collect.Sets;
 
+/**
+ * An Observer that updates phrase counts when a document is added or removed.  In needed, the observer that exports phrase counts is triggered.
+ */
+
 public class PhraseCounter implements Observer {
 
   private static enum IndexStatus {
