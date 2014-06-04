@@ -8,14 +8,7 @@ import static phrasecount.Constants.STAT_DOC_COUNT_COL;
 import static phrasecount.Constants.STAT_SUM_COL;
 import static phrasecount.Constants.TYPEL;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
-import java.util.ArrayList;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.accumulo.core.data.ByteSequence;
 
@@ -68,7 +61,10 @@ public class PhraseExporter implements Observer {
     // TODO its possible that the Accismus column times stamp could be used as a seq number
     int seqNum = columns.get(EXPORT_SEQ_COL).toInteger(0);
     
-    export(row.toString().substring("phrase:".length()), exportDocCount, exportSum, seqNum);
+    // TODO need a way to configure Observers, maybe an initialize method that takes config
+    // TODO could export to an Accumulo table
+    FileExporter exporter = FileExporter.getInstance("phrase_export.txt");
+    exporter.export(row.toString().substring("phrase:".length()), exportDocCount, exportSum, seqNum);
     
     // check to see if the current value has changed and another export is needed
     if (currentSum != null && !currentSum.equals(exportSum)) {
@@ -85,83 +81,4 @@ public class PhraseExporter implements Observer {
 
     ttx.set().row(row).col(EXPORT_SEQ_COL).val(seqNum + 1);
   }
-
-  private static void export(String phrase, int docCount, int sum, int seqNum) throws InterruptedException, IOException {
-    // TODO need a way to configure Observers, maybe an initialize method that takes config
-    startFileWriterTask("phrase_export.txt");
-
-
-    ExportItem expItem = new ExportItem(docCount + ":" + sum + ":" + seqNum + ":" + phrase);
-    // Do not want each transaction to open, write, and close the resource, better to batch the writes of many threads into a single write.
-    // If there is too much in the queue, then this will throw an exception... that will fail the transaction and cause it to retry later
-    exportQueue.add(expItem);
-
-    // Wait for data to be written. If this was not done then the transaction could finish and the process die before the data was written. In this case the
-    // export data would be lost.
-    expItem.cdl.await();
-  }
-
-  private static LinkedBlockingQueue<ExportItem> exportQueue = null;
-
-  private static class ExportItem {
-    String exportData;
-    CountDownLatch cdl = new CountDownLatch(1);
-
-    ExportItem(String data) {
-      this.exportData = data;
-    }
-  }
-
-  private static class ExportTask implements Runnable {
-
-    Writer out;
-
-    ExportTask(String file) throws IOException {
-      out = new BufferedWriter(new FileWriter(file));
-    }
-
-    public void run() {
-
-      ArrayList<ExportItem> exports = new ArrayList<ExportItem>();
-
-      while (true) {
-        try {
-          exports.clear();
-
-          // gather export from all threads that have placed an item on the queue
-          exports.add(exportQueue.take());
-          exportQueue.drainTo(exports);
-
-          for (ExportItem ei : exports) {
-            out.write(ei.exportData);
-            out.write('\n');
-          }
-
-          // TODO could fsync
-          out.flush();
-
-          // notify all threads waiting after flushing
-          for (ExportItem ei : exports)
-            ei.cdl.countDown();
-
-        } catch (InterruptedException e) {
-          throw new RuntimeException(e);
-        } catch (IOException e) {
-          throw new RuntimeException(e);
-        }
-      }
-    }
-
-  }
-
-  private static synchronized void startFileWriterTask(String file) throws IOException {
-    if (exportQueue == null) {
-      exportQueue = new LinkedBlockingQueue<ExportItem>(10000);
-      Thread queueProcessingTask = new Thread(new ExportTask(file));
-
-      queueProcessingTask.setDaemon(true);
-      queueProcessingTask.start();
-    }
-  }
-
 }

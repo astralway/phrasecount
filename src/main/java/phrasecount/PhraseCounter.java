@@ -15,6 +15,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.accumulo.core.data.ByteSequence;
+import org.apache.commons.math.stat.descriptive.moment.Mean;
+import org.apache.commons.math.stat.descriptive.moment.StandardDeviation;
 
 import accismus.api.Column;
 import accismus.api.Observer;
@@ -65,6 +67,28 @@ public class PhraseCounter implements Observer {
 
   }
 
+  /**
+   * Determine what document count is two standard deviations above the mean.
+   */
+  private double computeHighCardinalityCutoff(Map<String,Integer> phrases, Map<String,Map<Column,Value>> storedPhrases, int multiplier) {
+    Mean mean = new Mean();
+    StandardDeviation stddev = new StandardDeviation();
+
+    for (Entry<String,Integer> entry : phrases.entrySet()) {
+      String phrase = entry.getKey();
+      String phraseRow = "phrase:" + phrase;
+
+      Map<Column,Value> columns = storedPhrases.get(phraseRow);
+      int docCount = columns.get(STAT_DOC_COUNT_COL).toInteger(0);
+      int newDocCount = docCount + multiplier * 1;
+
+      mean.increment(newDocCount);
+      stddev.increment(newDocCount);
+    }
+
+    return mean.getResult() + (2 * stddev.getResult());
+  }
+
   private void updatePhraseCounts(TypedTransaction ttx, ByteSequence row, int multiplier) throws Exception {
     String content = ttx.get().row(row).col(Constants.DOC_CONTENT_COL).toString();
 
@@ -82,6 +106,8 @@ public class PhraseCounter implements Observer {
 
     Map<String,Map<Column,Value>> storedPhrases = ttx.getd(rows, Sets.newHashSet(STAT_SUM_COL, STAT_DOC_COUNT_COL, EXPORT_SUM_COL, EXPORT_DOC_COUNT_COL));
 
+    double cutOff = computeHighCardinalityCutoff(phrases, storedPhrases, multiplier);
+
     for (Entry<String,Integer> entry : phrases.entrySet()) {
       String phrase = entry.getKey();
       String phraseRow = "phrase:" + phrase;
@@ -92,6 +118,11 @@ public class PhraseCounter implements Observer {
 
       int newSum = sum + multiplier * entry.getValue();
       int newDocCount = docCount + multiplier * 1;
+
+      if (newDocCount > cutOff) {
+        // TODO implement handling for high cardinality terms
+        // continue;
+      }
 
       if (newSum > 0) {
         // trigger the export observer to process changes data
@@ -121,5 +152,4 @@ public class PhraseCounter implements Observer {
 
     return IndexStatus.valueOf(status);
   }
-
 }

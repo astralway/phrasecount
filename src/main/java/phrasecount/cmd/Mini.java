@@ -39,6 +39,9 @@ public class Mini {
     @Parameter(names = {"-w", "--workerThreads"}, description = "Number of worker threads")
     int workerThreads = 5;
 
+    @Parameter(names = {"-t", "--tabletServers"}, description = "Number of tablet servers")
+    int tabletServers = 2;
+
     @Parameter(names = {"-z", "--zookeeperPort"}, description = "Port to use for zookeeper")
     int zookeeperPort = 0;
 
@@ -62,6 +65,7 @@ public class Mini {
 
     MiniAccumuloConfig cfg = new MiniAccumuloConfig(new File(params.args.get(0)), new String("secret"));
     cfg.setZooKeeperPort(params.zookeeperPort);
+    cfg.setNumTservers(params.tabletServers);
     if (params.moreMemory) {
       cfg.setMemory(ServerType.TABLET_SERVER, 2, MemoryUnit.GIGABYTE);
       Map<String,String> site = new HashMap<String,String>();
