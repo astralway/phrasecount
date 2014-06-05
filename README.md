@@ -115,7 +115,8 @@ Modify `$ACCISMUS_HOME/conf/initialization.properties` and replace the observer
 lines with the following:
 
 ```
-accismus.worker.observer.0=index,check,,phrasecount.DocumentIndexer
+accismus.worker.observer.0=index,check,,phrasecount.PhraseCounter
+accismus.worker.observer.1=export,check,,phrasecount.PhraseExporter
 ```
 
 Now initialize and start Accismus as outlined in its docs. Once started the
