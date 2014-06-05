@@ -7,13 +7,19 @@ incremented. Unique documents have reference counts based on the number of
 locations that point to them.  When a unique document is no longer referenced
 by any location, then the phrase counts will be decremented appropriately.  
 
+After phrase counts are incremented, export transactions send phrase counts to
+a local file.  A real application would probably export to HDFS or an Accumulo
+table.   The purpose of exporting data is to make it available for query.
+Percolator is not designed to support queries, because its transactions are
+designed for throughput and not responsiveness.
+
 Schema
 ------
 
 This example uses the following schema.   This schema does not handle high
-cardinality phrases very well.  One possible way to handle this would be to set
-a random column on high cardinality phrases and also set a weak notification.
-Weak notification are not supported yet in Accismus.
+cardinality phrases very well, for now .  One possible way to handle this would
+be to set a random column on high cardinality phrases and also set a weak
+notification.  Weak notification are not supported yet in Accismus.
 
 Row                   | Column          | Value             | Purpose
 ----------------------|-----------------|-------------------|---------------------------------------------------------------------
@@ -28,6 +34,20 @@ phrase:&lt;phrase&gt; | export:check    | empty             | Triggers export ob
 phrase:&lt;phrase&gt; | export:docCount | &lt;int&gt;       | Phrase docCount queued for export
 phrase:&lt;phrase&gt; | export:seq      | &lt;int&gt;       | A sequence number used to order exports, as they may arrive out of order.
 phrase:&lt;phrase&gt; | export:sum      | &lt;int&gt;       | Phrase sum queued for export
+
+Code Overview
+-------------
+
+Documents are loaded into the Accismus table by [DocumentLoader][1] which is
+executed by [Load][2].  [DocumentLoader][1] handles reference counting of
+unique documents and may set a notification causing [PhraseCounter][3] to
+execute.  [PhraseCounter][3] increments or decrements global phrase counts for
+all phrases found in a unique document.  [PhraseCounter][3] is run by the
+Accismus worker process and is configured by [Mini][4] when using java to run
+this example.  [PhraseCounter][3] may set a notifcation which causes
+[PhraseExporter][5] to run.  [PhraseExporter][5] exports phrases to a file with
+a sequence number.  The sequence number allows you to know which version of the
+phrase in the file is the most recent.
 
 Building
 --------
@@ -113,4 +133,10 @@ links -dump 1 -no-numbering -no-references http://accumulo.apache.org > data/acc
 links -dump 1 -no-numbering -no-references http://hadoop.apache.org > data/hadoop.txt
 links -dump 1 -no-numbering -no-references http://zookeeper.apache.org > data/zookeeper.txt
 ```
+
+[1]: src/main/java/phrasecount/DocumentLoader.java
+[2]: src/main/java/phrasecount/cmd/Load.java
+[3]: src/main/java/phrasecount/PhraseCounter.java
+[4]: src/main/java/phrasecount/cmd/Mini.java
+[5]: src/main/java/phrasecount/PhraseExporter.java
 
