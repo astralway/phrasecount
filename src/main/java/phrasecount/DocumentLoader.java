@@ -31,7 +31,7 @@ public class DocumentLoader implements Loader {
 
     if (storedHash == null || !storedHash.equals(document.getHash())) {
 
-      ttx.set().row("uri:" + document.getURI()).col(DOC_HASH_COL).val(document.getHash());
+      ttx.mutate().row("uri:" + document.getURI()).col(DOC_HASH_COL).set(document.getHash());
 
       Integer refCount = ttx.get().row("doc:" + document.getHash()).col(DOC_REF_COUNT_COL).toInteger();
       if (refCount == null) {
@@ -47,14 +47,14 @@ public class DocumentLoader implements Loader {
   }
 
   private void setRefCount(TypedTransaction tx, String hash, int rc) {
-    tx.set().row("doc:" + hash).col(DOC_REF_COUNT_COL).val(rc);
+    tx.mutate().row("doc:" + hash).col(DOC_REF_COUNT_COL).set(rc);
     // TODO want to trigger checking for indexing in all cases when the ref count transitions to 0 or 1, except when it transitions from 2 to 1.... the
     // following transitions should trigger a check for indexing
     // null->1
     // 0->1
     // 1->0
     if (rc == 0 || rc == 1)
-      tx.set().row("doc:" + hash).col(INDEX_CHECK_COL).val(); // setting this triggers the phrase counting observer
+      tx.mutate().row("doc:" + hash).col(INDEX_CHECK_COL).set(); // setting this triggers the phrase counting observer
   }
 
   private void decrementRefCount(TypedTransaction tx, String hash) throws Exception {
@@ -64,6 +64,6 @@ public class DocumentLoader implements Loader {
 
   private void addNewDocument(TypedTransaction tx, Document doc) {
     setRefCount(tx, doc.getHash(), 1);
-    tx.set().row("doc:" + doc.getHash()).col(DOC_CONTENT_COL).val(doc.getContent());
+    tx.mutate().row("doc:" + doc.getHash()).col(DOC_CONTENT_COL).set(doc.getContent());
   }
 }

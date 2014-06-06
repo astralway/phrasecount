@@ -45,7 +45,7 @@ public class PhraseCounter implements Observer {
 
     if (status == IndexStatus.UNINDEXED && refCount > 0) {
       updatePhraseCounts(ttx, row, 1);
-      ttx.set().row(row).col(INDEX_STATUS_COL).val(IndexStatus.INDEXED.name());
+      ttx.mutate().row(row).col(INDEX_STATUS_COL).set(IndexStatus.INDEXED.name());
     } else if (status == IndexStatus.INDEXED && refCount == 0) {
       updatePhraseCounts(ttx, row, -1);
       deleteDocument(ttx, row);
@@ -126,20 +126,20 @@ public class PhraseCounter implements Observer {
 
       if (newSum > 0) {
         // trigger the export observer to process changes data
-        ttx.set().row(phraseRow).col(EXPORT_CHECK_COL).val();
-        ttx.set().row(phraseRow).col(STAT_SUM_COL).val(newSum);
+        ttx.mutate().row(phraseRow).col(EXPORT_CHECK_COL).set();
+        ttx.mutate().row(phraseRow).col(STAT_SUM_COL).set(newSum);
       } else
-        ttx.delete().row(phraseRow).col(STAT_SUM_COL);
+        ttx.mutate().row(phraseRow).col(STAT_SUM_COL).delete();
 
       if (newDocCount > 0)
-        ttx.set().row(phraseRow).col(STAT_DOC_COUNT_COL).val(newDocCount);
+        ttx.mutate().row(phraseRow).col(STAT_DOC_COUNT_COL).set(newDocCount);
       else
-        ttx.delete().row(phraseRow).col(STAT_DOC_COUNT_COL);
+        ttx.mutate().row(phraseRow).col(STAT_DOC_COUNT_COL).delete();
 
       if (!columns.containsKey(EXPORT_SUM_COL)) {
         // only update export columns if not set... once set, these columns can only be changed by the export observer
-        ttx.set().row(phraseRow).col(EXPORT_SUM_COL).val(newSum);
-        ttx.set().row(phraseRow).col(EXPORT_DOC_COUNT_COL).val(newDocCount);
+        ttx.mutate().row(phraseRow).col(EXPORT_SUM_COL).set(newSum);
+        ttx.mutate().row(phraseRow).col(EXPORT_DOC_COUNT_COL).set(newDocCount);
       }
     }
   }

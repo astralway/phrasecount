@@ -69,9 +69,9 @@ public class PhraseExporter implements Observer {
     // check to see if the current value has changed and another export is needed
     if (currentSum != null && !currentSum.equals(exportSum)) {
       // initiate another export transaction
-      ttx.set().row(row).col(EXPORT_SUM_COL).val(currentSum);
-      ttx.set().row(row).col(EXPORT_DOC_COUNT_COL).val(currentDocCount);
-      ttx.set().row(row).col(EXPORT_CHECK_COL).val();
+      ttx.mutate().row(row).col(EXPORT_SUM_COL).set(currentSum);
+      ttx.mutate().row(row).col(EXPORT_DOC_COUNT_COL).set(currentDocCount);
+      ttx.mutate().row(row).col(EXPORT_CHECK_COL).set();
     } else {
       ttx.delete(row, EXPORT_SUM_COL);
       ttx.delete(row, EXPORT_DOC_COUNT_COL);
@@ -79,6 +79,6 @@ public class PhraseExporter implements Observer {
       // ttx.delete(row, EXPORT_CHECK_COL);
     }
 
-    ttx.set().row(row).col(EXPORT_SEQ_COL).val(seqNum + 1);
+    ttx.mutate().row(row).col(EXPORT_SEQ_COL).set(seqNum + 1);
   }
 }
