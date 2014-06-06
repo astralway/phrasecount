@@ -6,13 +6,16 @@ import static phrasecount.Constants.EXPORT_CHECK_COL;
 import static phrasecount.Constants.EXPORT_DOC_COUNT_COL;
 import static phrasecount.Constants.EXPORT_SUM_COL;
 import static phrasecount.Constants.INDEX_STATUS_COL;
+import static phrasecount.Constants.STAT_CHECK_COL;
 import static phrasecount.Constants.STAT_DOC_COUNT_COL;
 import static phrasecount.Constants.STAT_SUM_COL;
 import static phrasecount.Constants.TYPEL;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 
 import org.apache.accumulo.core.data.ByteSequence;
 import org.apache.commons.math.stat.descriptive.moment.Mean;
@@ -68,7 +71,7 @@ public class PhraseCounter implements Observer {
   }
 
   /**
-   * Determine what document count is two standard deviations above the mean.
+   * Determine what document count is one standard deviation above the mean.
    */
   private double computeHighCardinalityCutoff(Map<String,Integer> phrases, Map<String,Map<Column,Value>> storedPhrases, int multiplier) {
     Mean mean = new Mean();
@@ -86,7 +89,7 @@ public class PhraseCounter implements Observer {
       stddev.increment(newDocCount);
     }
 
-    return mean.getResult() + (2 * stddev.getResult());
+    return mean.getResult() + (1 * stddev.getResult());
   }
 
   private void updatePhraseCounts(TypedTransaction ttx, ByteSequence row, int multiplier) throws Exception {
@@ -108,6 +111,8 @@ public class PhraseCounter implements Observer {
 
     double cutOff = computeHighCardinalityCutoff(phrases, storedPhrases, multiplier);
 
+    Map<String,Integer> highCardinalityPhrases = new HashMap<String,Integer>();
+
     for (Entry<String,Integer> entry : phrases.entrySet()) {
       String phrase = entry.getKey();
       String phraseRow = "phrase:" + phrase;
@@ -120,12 +125,13 @@ public class PhraseCounter implements Observer {
       int newDocCount = docCount + multiplier * 1;
 
       if (newDocCount > cutOff) {
-        // TODO implement handling for high cardinality terms
-        // continue;
+        highCardinalityPhrases.put(phraseRow, entry.getValue());
+        continue;
       }
 
       if (newSum > 0) {
         // trigger the export observer to process changes data
+        //TODO could use a weak notification for export check
         ttx.mutate().row(phraseRow).col(EXPORT_CHECK_COL).set();
         ttx.mutate().row(phraseRow).col(STAT_SUM_COL).set(newSum);
       } else
@@ -142,6 +148,37 @@ public class PhraseCounter implements Observer {
         ttx.mutate().row(phraseRow).col(EXPORT_DOC_COUNT_COL).set(newDocCount);
       }
     }
+
+    updateHighCardinality(ttx, row, multiplier, highCardinalityPhrases);
+  }
+
+  // choose a rand column qualifer and updated it, then trigger a special observer that deals with these random qualifiers
+  private void updateHighCardinality(TypedTransaction ttx, ByteSequence row, int multiplier, Map<String,Integer> highCardinalityPhrases) throws Exception {
+    if (highCardinalityPhrases.size() == 0)
+      return;
+
+    int randCol = new Random().nextInt(Integer.MAX_VALUE);
+    Column randSumCol = TYPEL.newColumn("stat", String.format("sum:%x", randCol));
+    Column randDocCol = TYPEL.newColumn("stat", String.format("docCount:%x", randCol));
+
+    // its very likely that these do not exist, but must check just in case
+    Map<String,Map<Column,Value>> storedPhrases = ttx.getd(highCardinalityPhrases.keySet(), Sets.newHashSet(randSumCol, randDocCol));
+
+    for (Entry<String,Integer> entry : highCardinalityPhrases.entrySet()) {
+      String phraseRow = entry.getKey();
+
+      Map<Column,Value> columns = storedPhrases.get(phraseRow);
+      int sum = columns.get(randSumCol).toInteger(0);
+      int docCount = columns.get(randDocCol).toInteger(0);
+
+      int newSum = sum + multiplier * entry.getValue();
+      int newDocCount = docCount + multiplier * 1;
+      
+      ttx.mutate().row(phraseRow).col(randSumCol).set(newSum);
+      ttx.mutate().row(phraseRow).col(randDocCol).set(newDocCount);
+      ttx.mutate().row(phraseRow).col(STAT_CHECK_COL).weaklyNotify();
+    }
+
   }
 
   private IndexStatus getStatus(TypedTransaction tx, ByteSequence row) throws Exception {

@@ -60,12 +60,7 @@ public class PhraseExporter implements Observer {
 
     // TODO its possible that the Accismus column times stamp could be used as a seq number
     int seqNum = columns.get(EXPORT_SEQ_COL).toInteger(0);
-    
-    // TODO need a way to configure Observers, maybe an initialize method that takes config
-    // TODO could export to an Accumulo table
-    FileExporter exporter = FileExporter.getInstance("phrase_export.txt");
-    exporter.export(row.toString().substring("phrase:".length()), exportDocCount, exportSum, seqNum);
-    
+
     // check to see if the current value has changed and another export is needed
     if (currentSum != null && !currentSum.equals(exportSum)) {
       // initiate another export transaction
@@ -73,6 +68,12 @@ public class PhraseExporter implements Observer {
       ttx.mutate().row(row).col(EXPORT_DOC_COUNT_COL).set(currentDocCount);
       ttx.mutate().row(row).col(EXPORT_CHECK_COL).set();
     } else {
+
+      // TODO need a way to configure Observers, maybe an initialize method that takes config
+      // TODO could export to an Accumulo table
+      FileExporter exporter = FileExporter.getInstance("phrase_export.txt");
+      exporter.export(row.toString().substring("phrase:".length()), exportDocCount, exportSum, seqNum);
+
       ttx.delete(row, EXPORT_SUM_COL);
       ttx.delete(row, EXPORT_DOC_COUNT_COL);
       // TODO modifying trigger is broken

@@ -3,18 +3,23 @@ package phrasecount;
 import static phrasecount.Constants.DOC_CONTENT_COL;
 import static phrasecount.Constants.DOC_REF_COUNT_COL;
 import static phrasecount.Constants.INDEX_CHECK_COL;
+import static phrasecount.Constants.STAT_CHECK_COL;
 import static phrasecount.Constants.STAT_DOC_COUNT_COL;
 import static phrasecount.Constants.STAT_SUM_COL;
 import static phrasecount.Constants.TYPEL;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.accumulo.minicluster.MiniAccumuloCluster;
 import org.apache.accumulo.minicluster.MiniAccumuloConfig;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -33,12 +38,13 @@ import com.google.common.collect.Sets;
 
 //TODO make this an integration test
 
-public class DocumentIndexerTest {
+public class PhraseCounterTest {
   public static TemporaryFolder folder = new TemporaryFolder();
   public static MiniAccumuloCluster cluster;
   private static InitializationProperties props;
   private static MiniAccismus miniAccismus;
   private static final PasswordToken password = new PasswordToken("secret");
+  private static AtomicInteger tableCounter = new AtomicInteger(1);
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
@@ -46,7 +52,16 @@ public class DocumentIndexerTest {
     MiniAccumuloConfig cfg = new MiniAccumuloConfig(folder.newFolder("miniAccumulo"), new String(password.getPassword()));
     cluster = new MiniAccumuloCluster(cfg);
     cluster.start();
+  }
 
+  @AfterClass
+  public static void tearDownAfterClass() throws Exception {
+    cluster.stop();
+    folder.delete();
+  }
+
+  @Before
+  public void setUpAccismus() throws Exception {
     // TODO add helper code to make this shorter
     props = new InitializationProperties();
     props.setAccumuloInstance(cluster.getInstanceName());
@@ -54,9 +69,11 @@ public class DocumentIndexerTest {
     props.setAccumuloPassword("secret");
     props.setZookeeperRoot("/accismus");
     props.setZookeepers(cluster.getZooKeepers());
-    props.setAccumuloTable("data");
+    props.setClearZookeeper(true);
+    props.setAccumuloTable("data" + tableCounter.getAndIncrement());
     props.setNumThreads(5);
     props.setObservers(Collections.singletonMap(INDEX_CHECK_COL, PhraseCounter.class.getName()));
+    props.setWeakObservers(Collections.singletonMap(STAT_CHECK_COL, HCCounter.class.getName()));
 
     Admin.initialize(props);
 
@@ -64,11 +81,9 @@ public class DocumentIndexerTest {
     miniAccismus.start();
   }
 
-  @AfterClass
-  public static void tearDownAfterClass() throws Exception {
+  @After
+  public void tearDownAccismus() throws Exception {
     miniAccismus.stop();
-    cluster.stop();
-    folder.delete();
   }
   
   static class PhraseInfo {
@@ -88,6 +103,10 @@ public class DocumentIndexerTest {
       }
 
       return false;
+    }
+
+    public String toString() {
+      return numDocs + " " + sum;
     }
   }
 
@@ -173,6 +192,66 @@ public class DocumentIndexerTest {
     le.shutdown();
     snapFact.close();
 
+  }
+
+  @Test
+  public void testHighCardinality() throws Exception {
+    LoaderExecutorProperties lep = new LoaderExecutorProperties(props);
+    lep.setNumThreads(0);
+    lep.setQueueSize(0);
+
+    LoaderExecutor le = new LoaderExecutor(lep);
+
+    Random rand = new Random();
+
+    loadDocsWithRandomWords(le, rand, "This is only a test", 0, 100);
+
+    SnapshotFactory snapFact = new SnapshotFactory(props);
+
+    Assert.assertEquals(new PhraseInfo(100, 100), getPhraseInfo(snapFact, "this is only a"));
+    Assert.assertEquals(new PhraseInfo(100, 100), getPhraseInfo(snapFact, "is only a test"));
+
+    loadDocsWithRandomWords(le, rand, "This is not a test", 0, 2);
+
+    Assert.assertEquals(new PhraseInfo(2, 2), getPhraseInfo(snapFact, "this is not a"));
+    Assert.assertEquals(new PhraseInfo(2, 2), getPhraseInfo(snapFact, "is not a test"));
+    Assert.assertEquals(new PhraseInfo(98, 98), getPhraseInfo(snapFact, "this is only a"));
+    Assert.assertEquals(new PhraseInfo(98, 98), getPhraseInfo(snapFact, "is only a test"));
+
+    loadDocsWithRandomWords(le, rand, "This is not a test", 2, 100);
+
+    Assert.assertEquals(new PhraseInfo(100, 100), getPhraseInfo(snapFact, "this is not a"));
+    Assert.assertEquals(new PhraseInfo(100, 100), getPhraseInfo(snapFact, "is not a test"));
+    Assert.assertEquals(new PhraseInfo(0, 0), getPhraseInfo(snapFact, "this is only a"));
+    Assert.assertEquals(new PhraseInfo(0, 0), getPhraseInfo(snapFact, "is only a test"));
+
+    loadDocsWithRandomWords(le, rand, "This is only a test", 0, 50);
+
+    Assert.assertEquals(new PhraseInfo(50, 50), getPhraseInfo(snapFact, "this is not a"));
+    Assert.assertEquals(new PhraseInfo(50, 50), getPhraseInfo(snapFact, "is not a test"));
+    Assert.assertEquals(new PhraseInfo(50, 50), getPhraseInfo(snapFact, "this is only a"));
+    Assert.assertEquals(new PhraseInfo(50, 50), getPhraseInfo(snapFact, "is only a test"));
+
+    le.shutdown();
+    snapFact.close();
+  }
+
+  void loadDocsWithRandomWords(LoaderExecutor le, Random rand, String phrase, int start, int end) {
+    // load many documents that share the same phrase
+    for (int i = start; i < end; i++) {
+      String uri = "/foo" + i;
+      StringBuilder content = new StringBuilder(phrase);
+      // add a bunch of random words
+      for (int j = 0; j < 20; j++) {
+        content.append(' ');
+        content.append(Integer.toString(rand.nextInt(10000), 36));
+      }
+
+      Document doc = new Document(uri, content.toString());
+      le.execute(new DocumentLoader(doc));
+    }
+
+    miniAccismus.waitForObservers();
   }
 }
   

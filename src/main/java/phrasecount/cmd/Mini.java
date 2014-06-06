@@ -2,6 +2,7 @@ package phrasecount.cmd;
 
 import static phrasecount.Constants.EXPORT_CHECK_COL;
 import static phrasecount.Constants.INDEX_CHECK_COL;
+import static phrasecount.Constants.STAT_CHECK_COL;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -17,6 +18,7 @@ import org.apache.accumulo.minicluster.MiniAccumuloCluster;
 import org.apache.accumulo.minicluster.MiniAccumuloConfig;
 import org.apache.accumulo.minicluster.ServerType;
 
+import phrasecount.HCCounter;
 import phrasecount.PhraseCounter;
 import phrasecount.PhraseExporter;
 import accismus.api.Admin;
@@ -56,6 +58,8 @@ public class Mini {
 
     try {
       jc.parse(args);
+      if (params.args == null || params.args.size() != 2)
+        throw new ParameterException("Expected two arguments");
     } catch (ParameterException pe) {
       System.out.println(pe.getMessage());
       jc.setProgramName(Mini.class.getSimpleName());
@@ -92,6 +96,10 @@ public class Mini {
     observers.put(INDEX_CHECK_COL, PhraseCounter.class.getName());
     observers.put(EXPORT_CHECK_COL, PhraseExporter.class.getName());
     props.setObservers(observers);
+
+    observers.clear();
+    observers.put(STAT_CHECK_COL, HCCounter.class.getName());
+    props.setWeakObservers(observers);
 
     Admin.initialize(props);
 

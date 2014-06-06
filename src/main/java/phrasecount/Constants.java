@@ -13,6 +13,7 @@ public class Constants {
   public static final Column DOC_CONTENT_COL = TYPEL.newColumn("doc", "content");
   public static final Column DOC_HASH_COL = TYPEL.newColumn("doc", "hash");
   public static final Column DOC_REF_COUNT_COL = TYPEL.newColumn("doc", "refCount");
+  public static final Column STAT_CHECK_COL = TYPEL.newColumn("stat", "check");
   public static final Column STAT_DOC_COUNT_COL = TYPEL.newColumn("stat", "docCount");
   public static final Column STAT_SUM_COL = TYPEL.newColumn("stat", "sum");
   public static final Column EXPORT_CHECK_COL = TYPEL.newColumn("export", "check");

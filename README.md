@@ -16,11 +16,10 @@ designed for throughput and not responsiveness.
 Schema
 ------
 
-This example uses the following schema.   This schema does not handle high
-cardinality phrases very well, for now .  One possible way to handle this would
-be to set a random column on high cardinality phrases and also set a weak
-notification.  Weak notification are not supported yet in Accismus.
+This example uses the following schema. Experimental high cardinality support
+was added, but its not documented in the schema or code overview yet.
 
+  
 Row                   | Column          | Value             | Purpose
 ----------------------|-----------------|-------------------|---------------------------------------------------------------------
 uri:&lt;uri&gt;       | doc:hash        | &lt;hash&gt;      | Contains the hash of the document found at the URI
