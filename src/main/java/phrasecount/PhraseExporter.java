@@ -12,8 +12,11 @@ import java.util.Map;
 
 import org.apache.accumulo.core.data.ByteSequence;
 
+import phrasecount.export.AccumuloExporter;
+import phrasecount.export.Exporter;
+import phrasecount.export.FileExporter;
+import accismus.api.AbstractObserver;
 import accismus.api.Column;
-import accismus.api.Observer;
 import accismus.api.Transaction;
 import accismus.api.types.TypedSnapshot.Value;
 import accismus.api.types.TypedTransaction;
@@ -44,9 +47,35 @@ import com.google.common.collect.Sets;
  * If the phrase counts have changed while the export was in progress, then this observer will trigger itself.
  * 
  */
-public class PhraseExporter implements Observer {
+public class PhraseExporter extends AbstractObserver {
+
+  private Exporter exporter;
+
+  private String get(Map<String,String> config, String key, String defaultValue) {
+    String val = config.get(key);
+    if (val == null)
+      return defaultValue;
+    return val;
+  }
+
+  @Override
+  public void init(Map<String,String> config) throws Exception {
+    String sink = get(config, "sink", "file");
+    if (sink.equals("file")) {
+      String file = get(config, "file", "phrase_export.txt");
+      exporter = FileExporter.getInstance(file);
+    } else if (sink.equals("accumulo")) {
+      String instance = config.get("instance");
+      String zookeepers = config.get("zookeeper");
+      String user = config.get("user");
+      String password = config.get("password");
+      String table = config.get("table");
+      exporter = AccumuloExporter.getInstance(instance, zookeepers, user, password, table);
+    }
+  }
 
   // TODO this needs test
+  @Override
   public void process(Transaction tx, ByteSequence row, Column col) throws Exception {
     TypedTransaction ttx = TYPEL.transaction(tx);
     
@@ -68,10 +97,6 @@ public class PhraseExporter implements Observer {
       ttx.mutate().row(row).col(EXPORT_DOC_COUNT_COL).set(currentDocCount);
       ttx.mutate().row(row).col(EXPORT_CHECK_COL).set();
     } else {
-
-      // TODO need a way to configure Observers, maybe an initialize method that takes config
-      // TODO could export to an Accumulo table
-      FileExporter exporter = FileExporter.getInstance("phrase_export.txt");
       exporter.export(row.toString().substring("phrase:".length()), exportDocCount, exportSum, seqNum);
 
       ttx.delete(row, EXPORT_SUM_COL);
@@ -82,4 +107,5 @@ public class PhraseExporter implements Observer {
 
     ttx.mutate().row(row).col(EXPORT_SEQ_COL).set(seqNum + 1);
   }
+
 }

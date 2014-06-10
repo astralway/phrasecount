@@ -21,6 +21,7 @@ public class DocumentLoader implements Loader {
     this.document = doc;
   }
   
+  @Override
   public void load(Transaction tx) throws Exception {
 
     // TODO need a strategy for dealing w/ large documents. If a worker processes many large documents concurrently it could cause memory exhaustion. . Could

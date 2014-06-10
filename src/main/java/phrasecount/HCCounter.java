@@ -9,9 +9,9 @@ import java.util.Map.Entry;
 import org.apache.accumulo.core.data.ByteSequence;
 import org.apache.accumulo.core.data.Range;
 
+import accismus.api.AbstractObserver;
 import accismus.api.Column;
 import accismus.api.ColumnIterator;
-import accismus.api.Observer;
 import accismus.api.RowIterator;
 import accismus.api.ScannerConfiguration;
 import accismus.api.Transaction;
@@ -21,8 +21,9 @@ import accismus.api.types.TypedTransaction;
  * This Observer processes high cardinality phrases. It sums up all of the random stat columns that were set.
  */
 
-public class HCCounter implements Observer {
+public class HCCounter extends AbstractObserver {
 
+  @Override
   public void process(Transaction tx, ByteSequence row, Column col) throws Exception {
     TypedTransaction ttx = TYPEL.transaction(tx);
 

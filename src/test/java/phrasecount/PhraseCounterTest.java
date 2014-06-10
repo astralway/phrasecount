@@ -30,6 +30,7 @@ import accismus.api.LoaderExecutor;
 import accismus.api.SnapshotFactory;
 import accismus.api.config.InitializationProperties;
 import accismus.api.config.LoaderExecutorProperties;
+import accismus.api.config.ObserverConfiguration;
 import accismus.api.test.MiniAccismus;
 import accismus.api.types.TypedSnapshot;
 import accismus.api.types.TypedSnapshot.Value;
@@ -72,8 +73,8 @@ public class PhraseCounterTest {
     props.setClearZookeeper(true);
     props.setAccumuloTable("data" + tableCounter.getAndIncrement());
     props.setNumThreads(5);
-    props.setObservers(Collections.singletonMap(INDEX_CHECK_COL, PhraseCounter.class.getName()));
-    props.setWeakObservers(Collections.singletonMap(STAT_CHECK_COL, HCCounter.class.getName()));
+    props.setObservers(Collections.singletonMap(INDEX_CHECK_COL, new ObserverConfiguration(PhraseCounter.class.getName())));
+    props.setWeakObservers(Collections.singletonMap(STAT_CHECK_COL, new ObserverConfiguration(HCCounter.class.getName())));
 
     Admin.initialize(props);
 

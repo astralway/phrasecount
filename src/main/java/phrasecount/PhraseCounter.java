@@ -21,8 +21,8 @@ import org.apache.accumulo.core.data.ByteSequence;
 import org.apache.commons.math.stat.descriptive.moment.Mean;
 import org.apache.commons.math.stat.descriptive.moment.StandardDeviation;
 
+import accismus.api.AbstractObserver;
 import accismus.api.Column;
-import accismus.api.Observer;
 import accismus.api.Transaction;
 import accismus.api.types.TypedSnapshot.Value;
 import accismus.api.types.TypedTransaction;
@@ -33,12 +33,13 @@ import com.google.common.collect.Sets;
  * An Observer that updates phrase counts when a document is added or removed.  In needed, the observer that exports phrase counts is triggered.
  */
 
-public class PhraseCounter implements Observer {
+public class PhraseCounter extends AbstractObserver {
 
   private static enum IndexStatus {
     INDEXED, UNINDEXED
   }
 
+  @Override
   public void process(Transaction tx, ByteSequence row, Column col) throws Exception {
 
     TypedTransaction ttx = TYPEL.transaction(tx);

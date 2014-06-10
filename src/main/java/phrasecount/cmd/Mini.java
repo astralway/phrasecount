@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.minicluster.MemoryUnit;
 import org.apache.accumulo.minicluster.MiniAccumuloCluster;
@@ -25,6 +26,7 @@ import accismus.api.Admin;
 import accismus.api.Column;
 import accismus.api.config.AccismusProperties;
 import accismus.api.config.InitializationProperties;
+import accismus.api.config.ObserverConfiguration;
 import accismus.api.test.MiniAccismus;
 
 import com.beust.jcommander.JCommander;
@@ -92,13 +94,15 @@ public class Mini {
     props.setAccumuloTable("data");
     props.setNumThreads(params.workerThreads);
 
-    Map<Column,String> observers = new HashMap<Column,String>();
-    observers.put(INDEX_CHECK_COL, PhraseCounter.class.getName());
-    observers.put(EXPORT_CHECK_COL, PhraseExporter.class.getName());
+    Map<Column,ObserverConfiguration> observers = new HashMap<Column,ObserverConfiguration>();
+    observers.put(INDEX_CHECK_COL, new ObserverConfiguration(PhraseCounter.class.getName()));
+
+    Map<String,String> exportConfig = setupAccumuloExport(cluster);
+    observers.put(EXPORT_CHECK_COL, new ObserverConfiguration(PhraseExporter.class.getName()).setParameters(exportConfig));
     props.setObservers(observers);
 
     observers.clear();
-    observers.put(STAT_CHECK_COL, HCCounter.class.getName());
+    observers.put(STAT_CHECK_COL, new ObserverConfiguration(HCCounter.class.getName()));
     props.setWeakObservers(observers);
 
     Admin.initialize(props);
@@ -112,5 +116,21 @@ public class Mini {
 
     System.out.println();
     System.out.println("Wrote : " + params.args.get(1));
+  }
+
+  private static Map<String,String> setupAccumuloExport(MiniAccumuloCluster cluster) throws Exception {
+    Connector conn = cluster.getConnector("root", "secret");
+    conn.tableOperations().create("dataExport");
+    
+    Map<String,String> exportConfig = new HashMap<String,String>();
+    
+    exportConfig.put("sink", "accumulo");
+    exportConfig.put("instance", cluster.getInstanceName());
+    exportConfig.put("zookeeper", cluster.getZooKeepers());
+    exportConfig.put("user", "root");
+    exportConfig.put("password", "secret");
+    exportConfig.put("table", "dataExport");
+    
+    return exportConfig;
   }
 }

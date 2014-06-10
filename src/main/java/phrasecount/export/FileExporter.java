@@ -1,4 +1,4 @@
-package phrasecount;
+package phrasecount.export;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -14,7 +14,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  * Exports phrase counts to a file. Efficiently allows multiple threads to concurrently export phrases.
  */
 
-public class FileExporter {
+public class FileExporter implements Exporter {
 
   private static class ExportTask implements Runnable {
 
@@ -24,6 +24,7 @@ public class FileExporter {
       out = new BufferedWriter(new FileWriter(file));
     }
 
+    @Override
     public void run() {
 
       ArrayList<ExportItem> exports = new ArrayList<ExportItem>();
@@ -69,7 +70,7 @@ public class FileExporter {
     }
   }
 
-  void export(String phrase, int docCount, int sum, int seqNum) throws InterruptedException, IOException {
+  public void export(String phrase, int docCount, int sum, int seqNum) throws InterruptedException, IOException {
     ExportItem expItem = new ExportItem(docCount + ":" + sum + ":" + seqNum + ":" + phrase);
     // Do not want each transaction to open, write, and close the resource, better to batch the writes of many threads into a single write.
     // If there is too much in the queue, then this will throw an exception... that will fail the transaction and cause it to retry later
@@ -90,7 +91,7 @@ public class FileExporter {
 
   private static Map<String,FileExporter> exporters = new HashMap<String,FileExporter>();
 
-  static synchronized FileExporter getInstance(String file) throws IOException {
+  public static synchronized FileExporter getInstance(String file) throws IOException {
 
     FileExporter ret = exporters.get(file);
 
