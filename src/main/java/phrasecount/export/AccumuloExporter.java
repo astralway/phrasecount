@@ -47,8 +47,15 @@ public class AccumuloExporter implements Exporter {
             Mutation mutation = new Mutation(ei.phrase);
 
             // use the sequence number for the Accumulo timestamp, this will cause older updates to fall behind newer ones
-            mutation.put("stat", "sum", ei.seqNum, ei.sum + "");
-            mutation.put("stat", "docCount", ei.seqNum, ei.docCount + "");
+            if (ei.sum == 0)
+              mutation.putDelete("stat", "sum", ei.seqNum);
+            else
+              mutation.put("stat", "sum", ei.seqNum, ei.sum + "");
+
+            if (ei.docCount == 0)
+              mutation.putDelete("stat", "docCount", ei.seqNum);
+            else
+              mutation.put("stat", "docCount", ei.seqNum, ei.docCount + "");
 
             bw.addMutation(mutation);
           }

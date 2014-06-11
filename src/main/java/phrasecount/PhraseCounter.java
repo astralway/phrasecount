@@ -130,12 +130,13 @@ public class PhraseCounter extends AbstractObserver {
         continue;
       }
 
-      if (newSum > 0) {
-        // trigger the export observer to process changes data
-        //TODO could use a weak notification for export check
-        ttx.mutate().row(phraseRow).col(EXPORT_CHECK_COL).set();
+      // trigger the export observer to process changes data
+      // TODO could use a weak notification for export check
+      ttx.mutate().row(phraseRow).col(EXPORT_CHECK_COL).set();
+
+      if (newSum > 0)
         ttx.mutate().row(phraseRow).col(STAT_SUM_COL).set(newSum);
-      } else
+      else
         ttx.mutate().row(phraseRow).col(STAT_SUM_COL).delete();
 
       if (newDocCount > 0)

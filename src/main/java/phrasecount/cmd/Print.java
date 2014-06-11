@@ -1,6 +1,7 @@
 package phrasecount.cmd;
 
 import java.io.File;
+import java.util.Iterator;
 import java.util.Map.Entry;
 
 import org.apache.accumulo.core.data.ByteSequence;
@@ -15,23 +16,56 @@ import accismus.api.Snapshot;
 import accismus.api.SnapshotFactory;
 import accismus.api.config.AccismusProperties;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Iterators;
+
 public class Print {
 
-  private static int count(Snapshot snap, String prefix, Column col) throws Exception {
-    ScannerConfiguration scanConfig = new ScannerConfiguration();
-    scanConfig.setRange(Range.prefix(prefix));
-    scanConfig.fetchColumn(col.getFamily(), col.getQualifier());
+  static class PhraseCount {
+    String phrase;
+    int sum;
+    int docCount;
 
-    int count = 0;
-
-    RowIterator riter = snap.get(scanConfig);
-    while (riter.hasNext()) {
-      @SuppressWarnings("unused")
-      Entry<ByteSequence,ColumnIterator> rowEntry = riter.next();
-      count++;
+    PhraseCount(String phrase, int sum, int docCount) {
+      this.phrase = phrase;
+      this.sum = sum;
+      this.docCount = docCount;
     }
 
-    return count;
+    public boolean equals(Object o) {
+      if (o instanceof PhraseCount) {
+        PhraseCount op = (PhraseCount) o;
+
+        return phrase.equals(op.phrase) && sum == op.sum && docCount == op.docCount;
+      }
+
+      return false;
+    }
+  }
+
+  static class PhraseRowTransform implements Function<Entry<ByteSequence,ColumnIterator>,PhraseCount> {
+
+    @Override
+    public PhraseCount apply(Entry<ByteSequence,ColumnIterator> input) {
+      String phrase = input.getKey().toString().substring(7);
+
+      int sum = 0;
+      int docCount = 0;
+
+      ColumnIterator citer = input.getValue();
+      while (citer.hasNext()) {
+        Entry<Column,ByteSequence> colEntry = citer.next();
+        String cq = colEntry.getKey().getQualifier().toString();
+
+        if (cq.equals("sum"))
+          sum = Integer.parseInt(colEntry.getValue().toString());
+        else
+          docCount = Integer.parseInt(colEntry.getValue().toString());
+      }
+
+      return new PhraseCount(phrase, sum, docCount);
+    }
+
   }
 
   public static void main(String[] args) throws Exception {
@@ -43,32 +77,11 @@ public class Print {
     SnapshotFactory snapFact = new SnapshotFactory(new AccismusProperties(new File(args[0])));
     Snapshot snap = snapFact.createSnapshot();
     try {
-      ScannerConfiguration scanConfig = new ScannerConfiguration();
-      scanConfig.setRange(Range.prefix("phrase:"));
-      scanConfig.fetchColumn(Constants.STAT_SUM_COL.getFamily(), Constants.STAT_SUM_COL.getQualifier());
-      scanConfig.fetchColumn(Constants.STAT_DOC_COUNT_COL.getFamily(), Constants.STAT_DOC_COUNT_COL.getQualifier());
+      Iterator<PhraseCount> phraseIter = createPhraseIterator(snap);
 
-      //TODO make TypedSnapshot support this
-      RowIterator riter = snap.get(scanConfig);
-      while (riter.hasNext()) {
-        Entry<ByteSequence,ColumnIterator> rowEntry = riter.next();
-        String phrase = rowEntry.getKey().toString().substring(7);
-        
-        int sum = 0;
-        int docCount = 0;
-        
-        ColumnIterator citer = rowEntry.getValue();
-        while(citer.hasNext()){
-          Entry<Column,ByteSequence> colEntry = citer.next();
-          String cq = colEntry.getKey().getQualifier().toString();
-
-          if (cq.equals("sum"))
-            sum = Integer.parseInt(colEntry.getValue().toString());
-          else
-            docCount = Integer.parseInt(colEntry.getValue().toString());
-        }
-
-        System.out.printf("%7d %7d '%s'\n", docCount, sum, phrase);
+      while (phraseIter.hasNext()) {
+        PhraseCount phraseCount = phraseIter.next();
+        System.out.printf("%7d %7d '%s'\n", phraseCount.docCount, phraseCount.sum, phraseCount.phrase);
       }
 
       // TODO could precompute this using observers
@@ -89,6 +102,33 @@ public class Print {
 
     // TODO figure what threads are hanging around
     System.exit(0);
+  }
+
+  private static int count(Snapshot snap, String prefix, Column col) throws Exception {
+    ScannerConfiguration scanConfig = new ScannerConfiguration();
+    scanConfig.setRange(Range.prefix(prefix));
+    scanConfig.fetchColumn(col.getFamily(), col.getQualifier());
+
+    int count = 0;
+
+    RowIterator riter = snap.get(scanConfig);
+    while (riter.hasNext()) {
+      @SuppressWarnings("unused")
+      Entry<ByteSequence,ColumnIterator> rowEntry = riter.next();
+      count++;
+    }
+
+    return count;
+  }
+
+  static Iterator<PhraseCount> createPhraseIterator(Snapshot snap) throws Exception {
+    ScannerConfiguration scanConfig = new ScannerConfiguration();
+    scanConfig.setRange(Range.prefix("phrase:"));
+    scanConfig.fetchColumn(Constants.STAT_SUM_COL.getFamily(), Constants.STAT_SUM_COL.getQualifier());
+    scanConfig.fetchColumn(Constants.STAT_DOC_COUNT_COL.getFamily(), Constants.STAT_DOC_COUNT_COL.getQualifier());
+
+    Iterator<PhraseCount> phraseIter = Iterators.transform(snap.get(scanConfig), new PhraseRowTransform());
+    return phraseIter;
   }
 
 }
