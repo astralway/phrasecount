@@ -16,9 +16,7 @@ designed for throughput and not responsiveness.
 Schema
 ------
 
-This example uses the following schema. Experimental high cardinality support
-was added, but its not documented in the schema or code overview yet.
-
+This example uses the following schema. 
   
 Row                   | Column                  | Value             | Purpose
 ----------------------|-------------------------|-------------------|---------------------------------------------------------------------
@@ -88,6 +86,9 @@ to an Accumulo table named `dataExport`.
 If you have built Accumulo 1.6.1-SNAPSHOT, you can add
 `-Daccumulo.version=1.6.1-SNAPSHOT` to the maven command.  
 
+The reason `-Dexec.classpathScope=test` is set is because it adds the test
+[log4j.properties][7] file to the classpath.
+
 Adding documents
 ----------------
 
@@ -108,7 +109,7 @@ should eventually see the phrase counts change.
 mvn exec:java -Dexec.mainClass=phrasecount.cmd.Print -Dexec.args="accismus.properties" -Dexec.classpathScope=test
 ```
 
-The print command will print out the number of unique documents and the number
+The command will print out the number of unique documents and the number
 of processed documents.  If the number of processed documents is less than the
 number of unique documents, then there is still work to do.  After the load
 command runs, the documents will have been added or updated.  However the
@@ -125,7 +126,14 @@ following utility will iterate over the two and look for differernces.
 mvn exec:java -Dexec.mainClass=phrasecount.cmd.Compare -Dexec.args="accismus.properties data dataExport" -Dexec.classpathScope=test
 ```
 
-If this command prints nothing, then all is good.
+If this command prints nothing, then all is good.  If things are not good, then
+try enabling transaction trace logging and rerunning the scenario.  Adding the
+following to log4j.properties will enable this tracing.  This config is
+commented out in the test [log4j.properties][7] file.
+
+```
+log4j.logger.accismus.impl.TracingTransaction=TRACE
+```
 
 Deploying example
 -----------------
@@ -171,4 +179,5 @@ links -dump 1 -no-numbering -no-references http://zookeeper.apache.org > data/zo
 [4]: src/main/java/phrasecount/cmd/Mini.java
 [5]: src/main/java/phrasecount/PhraseExporter.java
 [6]: src/main/java/phrasecount/HCCounter.java
+[7]: src/test/resources/log4j.properties
 
