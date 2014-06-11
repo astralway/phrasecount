@@ -20,19 +20,22 @@ This example uses the following schema. Experimental high cardinality support
 was added, but its not documented in the schema or code overview yet.
 
   
-Row                   | Column          | Value             | Purpose
-----------------------|-----------------|-------------------|---------------------------------------------------------------------
-uri:&lt;uri&gt;       | doc:hash        | &lt;hash&gt;      | Contains the hash of the document found at the URI
-doc:&lt;hash&gt;      | doc:content     | &lt;document&gt;  | The contents of the document
-doc:&lt;hash&gt;      | doc:refCount    | &lt;int&gt;       | The number of URIs that reference this document 
-doc:&lt;hash&gt;      | index:check     | empty             | Setting this columns triggers the observer that indexes the document 
-doc:&lt;hash&gt;      | index:status    | INDEXED or empty  | Used to track the status of wether this document was indexed 
-phrase:&lt;phrase&gt; | stat:docCount   | &lt;int&gt;       | Total number of documents the phrase occurred in
-phrase:&lt;phrase&gt; | stat:sum        | &lt;int&gt;       | Total number of times the phrase was seen in all documents
-phrase:&lt;phrase&gt; | export:check    | empty             | Triggers export observer
-phrase:&lt;phrase&gt; | export:docCount | &lt;int&gt;       | Phrase docCount queued for export
-phrase:&lt;phrase&gt; | export:seq      | &lt;int&gt;       | A sequence number used to order exports, as they may arrive out of order.
-phrase:&lt;phrase&gt; | export:sum      | &lt;int&gt;       | Phrase sum queued for export
+Row                   | Column                  | Value             | Purpose
+----------------------|-------------------------|-------------------|---------------------------------------------------------------------
+uri:&lt;uri&gt;       | doc:hash                | &lt;hash&gt;      | Contains the hash of the document found at the URI
+doc:&lt;hash&gt;      | doc:content             | &lt;document&gt;  | The contents of the document
+doc:&lt;hash&gt;      | doc:refCount            | &lt;int&gt;       | The number of URIs that reference this document 
+doc:&lt;hash&gt;      | index:check             | empty             | Setting this columns triggers the observer that indexes the document 
+doc:&lt;hash&gt;      | index:status            | INDEXED or empty  | Used to track the status of wether this document was indexed 
+phrase:&lt;phrase&gt; | stat:check              | empty             | Tiggers observer that handles high cardinality phrases
+phrase:&lt;phrase&gt; | stat:docCount           | &lt;int&gt;       | Total number of documents the phrase occurred in
+phrase:&lt;phrase&gt; | stat:sum                | &lt;int&gt;       | Total number of times the phrase was seen in all documents
+phrase:&lt;phrase&gt; | stat:docCount&lt;int&gt | &lt;int&gt;       | Random document count column used for high cardinality phrases
+phrase:&lt;phrase&gt; | stat:sum&lt;int&gt      | &lt;int&gt;       | Random count column used for high cardinality phrases
+phrase:&lt;phrase&gt; | export:check            | empty             | Triggers export observer
+phrase:&lt;phrase&gt; | export:docCount         | &lt;int&gt;       | Phrase docCount queued for export
+phrase:&lt;phrase&gt; | export:seq              | &lt;int&gt;       | A sequence number used to order exports, as they may arrive out of order.
+phrase:&lt;phrase&gt; | export:sum              | &lt;int&gt;       | Phrase sum queued for export
 
 Code Overview
 -------------
@@ -46,7 +49,14 @@ Accismus worker process and is configured by [Mini][4] when using java to run
 this example.  [PhraseCounter][3] may set a notifcation which causes
 [PhraseExporter][5] to run.  [PhraseExporter][5] exports phrases to a file with
 a sequence number.  The sequence number allows you to know which version of the
-phrase in the file is the most recent.
+phrase in the file is the most recent.  [PhraseExporter][5] can be configured
+to export to an Accumulo table.
+
+For high cardinality phrases, [PhraseCounter][3] will update a random column
+and set a notification that causes [HCCounter][6] to run.  [HCCounter][6] will
+read all of random columns and update the main count.  This breaks updating
+high cardinality phrases into two transaction, as mentioned in the Percolator
+paper.
 
 Building
 --------
@@ -72,6 +82,11 @@ mvn exec:java -Dexec.mainClass=phrasecount.cmd.Mini -Dexec.args="/tmp/mac accism
 
 After the mini command prints out `Wrote : accismus.properties` then its ready to use. 
 
+This command will automatically configure [PhraseExporter][5] to export phrases
+to an Accumulo table named `dataExport`.
+
+If you have built Accumulo 1.6.1-SNAPSHOT, you can add
+`-Daccumulo.version=1.6.1-SNAPSHOT` to the maven command.  
 
 Adding documents
 ----------------
@@ -99,6 +114,18 @@ number of unique documents, then there is still work to do.  After the load
 command runs, the documents will have been added or updated.  However the
 phrase counts will not update until the Observer runs in the background. 
 
+Comparing exported phrases
+--------------------------
+
+After all export transactions have run, the phrase counts in the Accumulo
+export table should be the same as those stored in the Accismus table.  The
+following utility will iterate over the two and look for differernces.
+
+```
+mvn exec:java -Dexec.mainClass=phrasecount.cmd.Compare -Dexec.args="accismus.properties data dataExport" -Dexec.classpathScope=test
+```
+
+If this command prints nothing, then all is good.
 
 Deploying example
 -----------------
@@ -115,8 +142,12 @@ lines with the following:
 
 ```
 accismus.worker.observer.0=index,check,,phrasecount.PhraseCounter
-accismus.worker.observer.1=export,check,,phrasecount.PhraseExporter
+accismus.worker.observer.1=export,check,,phrasecount.PhraseExporter,sink=accumulo,instance=<instance name>,zookeepers=<zookeepers>,user=<user>,password=<password>,table=<table>
+accismus.worker.observer.weak.0=stat,check,,phrasecount.HCCounter
 ```
+
+The line with PhraseExporter has configuration options that need to be
+configured to the Accumulo table where you want phrases to be exported.
 
 Now initialize and start Accismus as outlined in its docs. Once started the
 load and print commands above can be run passing in
@@ -139,4 +170,5 @@ links -dump 1 -no-numbering -no-references http://zookeeper.apache.org > data/zo
 [3]: src/main/java/phrasecount/PhraseCounter.java
 [4]: src/main/java/phrasecount/cmd/Mini.java
 [5]: src/main/java/phrasecount/PhraseExporter.java
+[6]: src/main/java/phrasecount/HCCounter.java
 

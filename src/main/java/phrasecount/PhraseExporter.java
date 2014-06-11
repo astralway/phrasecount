@@ -66,7 +66,7 @@ public class PhraseExporter extends AbstractObserver {
       exporter = FileExporter.getInstance(file);
     } else if (sink.equals("accumulo")) {
       String instance = config.get("instance");
-      String zookeepers = config.get("zookeeper");
+      String zookeepers = config.get("zookeepers");
       String user = config.get("user");
       String password = config.get("password");
       String table = config.get("table");

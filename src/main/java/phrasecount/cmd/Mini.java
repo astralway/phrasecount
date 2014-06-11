@@ -126,7 +126,7 @@ public class Mini {
     
     exportConfig.put("sink", "accumulo");
     exportConfig.put("instance", cluster.getInstanceName());
-    exportConfig.put("zookeeper", cluster.getZooKeepers());
+    exportConfig.put("zookeepers", cluster.getZooKeepers());
     exportConfig.put("user", "root");
     exportConfig.put("password", "secret");
     exportConfig.put("table", "dataExport");

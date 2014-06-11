@@ -19,7 +19,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 
 /**
- * Generates random documents from a word list using a zipf distribution.
+ * Generates random documents from a word list using a zipf distribution. This is experimental code.
  * 
  */
 public class Generator {
