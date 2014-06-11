@@ -30,8 +30,8 @@ doc:&lt;hash&gt;      | index:status            | INDEXED or empty  | Used to tr
 phrase:&lt;phrase&gt; | stat:check              | empty             | Tiggers observer that handles high cardinality phrases
 phrase:&lt;phrase&gt; | stat:docCount           | &lt;int&gt;       | Total number of documents the phrase occurred in
 phrase:&lt;phrase&gt; | stat:sum                | &lt;int&gt;       | Total number of times the phrase was seen in all documents
-phrase:&lt;phrase&gt; | stat:docCount&lt;int&gt | &lt;int&gt;       | Random document count column used for high cardinality phrases
-phrase:&lt;phrase&gt; | stat:sum&lt;int&gt      | &lt;int&gt;       | Random count column used for high cardinality phrases
+phrase:&lt;phrase&gt; | stat:docCount&lt;int&gt;| &lt;int&gt;       | Random document count column used for high cardinality phrases
+phrase:&lt;phrase&gt; | stat:sum&lt;int&gt;     | &lt;int&gt;       | Random count column used for high cardinality phrases
 phrase:&lt;phrase&gt; | export:check            | empty             | Triggers export observer
 phrase:&lt;phrase&gt; | export:docCount         | &lt;int&gt;       | Phrase docCount queued for export
 phrase:&lt;phrase&gt; | export:seq              | &lt;int&gt;       | A sequence number used to order exports, as they may arrive out of order.
