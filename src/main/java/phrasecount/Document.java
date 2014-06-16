@@ -32,7 +32,7 @@ public class Document {
     String[] tokens = content.toLowerCase().split("[^\\p{Alnum}]+");
 
     for (String token : tokens) {
-      hasher.putUnencodedChars(token);
+      hasher.putString(token);
     }
 
     return hash = hasher.hash().toString();

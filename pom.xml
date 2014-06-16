@@ -44,7 +44,7 @@
     </dependency>
     <dependency>
       <groupId>accismus</groupId>
-      <artifactId>accismus</artifactId>
+      <artifactId>accismus-core</artifactId>
       <version>0.0.1-SNAPSHOT</version>
     </dependency>
     <dependency>
