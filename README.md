@@ -60,7 +60,9 @@ Building
 --------
 
 After cloning this repo, build with following command.  May need to install
-Accismus into your local maven repo first.
+Accismus into your local maven repo first.  Accismus is rapidly chaning, if
+this project does not compile after git pull you may need to pull and install
+Accismus again.
 
 ```
 mvn package 
