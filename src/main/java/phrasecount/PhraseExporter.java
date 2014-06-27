@@ -108,4 +108,8 @@ public class PhraseExporter extends AbstractObserver {
     ttx.mutate().row(row).col(EXPORT_SEQ_COL).set(seqNum + 1);
   }
 
+  @Override
+  public ObservedColumn getObservedColumn() {
+    return new ObservedColumn(EXPORT_CHECK_COL, NotificationType.STRONG);
+  }
 }

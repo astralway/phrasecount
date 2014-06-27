@@ -5,6 +5,7 @@ import static phrasecount.Constants.DOC_REF_COUNT_COL;
 import static phrasecount.Constants.EXPORT_CHECK_COL;
 import static phrasecount.Constants.EXPORT_DOC_COUNT_COL;
 import static phrasecount.Constants.EXPORT_SUM_COL;
+import static phrasecount.Constants.INDEX_CHECK_COL;
 import static phrasecount.Constants.INDEX_STATUS_COL;
 import static phrasecount.Constants.STAT_CHECK_COL;
 import static phrasecount.Constants.STAT_DOC_COUNT_COL;
@@ -58,6 +59,11 @@ public class PhraseCounter extends AbstractObserver {
     // TODO modifying the trigger is currently broken, enable more than one observer to commit for a notification
     // tx.delete(row, col);
 
+  }
+
+  @Override
+  public ObservedColumn getObservedColumn() {
+    return new ObservedColumn(INDEX_CHECK_COL, NotificationType.STRONG);
   }
 
   private void deleteDocument(TypedTransaction tx, ByteSequence row) {

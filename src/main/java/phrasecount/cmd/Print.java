@@ -14,7 +14,7 @@ import accismus.api.RowIterator;
 import accismus.api.ScannerConfiguration;
 import accismus.api.Snapshot;
 import accismus.api.SnapshotFactory;
-import accismus.api.config.AccismusProperties;
+import accismus.api.config.ConnectionProperties;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
@@ -74,7 +74,7 @@ public class Print {
       System.exit(-1);
     }
 
-    SnapshotFactory snapFact = new SnapshotFactory(new AccismusProperties(new File(args[0])));
+    SnapshotFactory snapFact = new SnapshotFactory(new ConnectionProperties(new File(args[0])));
     Snapshot snap = snapFact.createSnapshot();
     try {
       Iterator<PhraseCount> phraseIter = createPhraseIterator(snap);

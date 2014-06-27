@@ -1,13 +1,10 @@
 package phrasecount.cmd;
 
-import static phrasecount.Constants.EXPORT_CHECK_COL;
-import static phrasecount.Constants.INDEX_CHECK_COL;
-import static phrasecount.Constants.STAT_CHECK_COL;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,8 +20,7 @@ import phrasecount.HCCounter;
 import phrasecount.PhraseCounter;
 import phrasecount.PhraseExporter;
 import accismus.api.Admin;
-import accismus.api.Column;
-import accismus.api.config.AccismusProperties;
+import accismus.api.config.ConnectionProperties;
 import accismus.api.config.InitializationProperties;
 import accismus.api.config.ObserverConfiguration;
 import accismus.api.test.MiniAccismus;
@@ -83,7 +79,7 @@ public class Mini {
     MiniAccumuloCluster cluster = new MiniAccumuloCluster(cfg);
     cluster.start();
 
-    AccismusProperties aprops = new AccismusProperties();
+    ConnectionProperties aprops = new ConnectionProperties();
     aprops.setAccumuloInstance(cluster.getInstanceName());
     aprops.setAccumuloUser("root");
     aprops.setAccumuloPassword("secret");
@@ -94,16 +90,14 @@ public class Mini {
     props.setAccumuloTable("data");
     props.setNumThreads(params.workerThreads);
 
-    Map<Column,ObserverConfiguration> observers = new HashMap<Column,ObserverConfiguration>();
-    observers.put(INDEX_CHECK_COL, new ObserverConfiguration(PhraseCounter.class.getName()));
+    List<ObserverConfiguration> observers = new ArrayList<ObserverConfiguration>();
+    observers.add(new ObserverConfiguration(PhraseCounter.class.getName()));
 
     Map<String,String> exportConfig = setupAccumuloExport(cluster);
-    observers.put(EXPORT_CHECK_COL, new ObserverConfiguration(PhraseExporter.class.getName()).setParameters(exportConfig));
-    props.setObservers(observers);
+    observers.add(new ObserverConfiguration(PhraseExporter.class.getName()).setParameters(exportConfig));
 
-    observers.clear();
-    observers.put(STAT_CHECK_COL, new ObserverConfiguration(HCCounter.class.getName()));
-    props.setWeakObservers(observers);
+    observers.add(new ObserverConfiguration(HCCounter.class.getName()));
+    props.setObservers(observers);
 
     Admin.initialize(props);
 

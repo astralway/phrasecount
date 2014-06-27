@@ -2,13 +2,11 @@ package phrasecount;
 
 import static phrasecount.Constants.DOC_CONTENT_COL;
 import static phrasecount.Constants.DOC_REF_COUNT_COL;
-import static phrasecount.Constants.INDEX_CHECK_COL;
-import static phrasecount.Constants.STAT_CHECK_COL;
 import static phrasecount.Constants.STAT_DOC_COUNT_COL;
 import static phrasecount.Constants.STAT_SUM_COL;
 import static phrasecount.Constants.TYPEL;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -73,8 +71,7 @@ public class PhraseCounterTest {
     props.setClearZookeeper(true);
     props.setAccumuloTable("data" + tableCounter.getAndIncrement());
     props.setNumThreads(5);
-    props.setObservers(Collections.singletonMap(INDEX_CHECK_COL, new ObserverConfiguration(PhraseCounter.class.getName())));
-    props.setWeakObservers(Collections.singletonMap(STAT_CHECK_COL, new ObserverConfiguration(HCCounter.class.getName())));
+    props.setObservers(Arrays.asList(new ObserverConfiguration(PhraseCounter.class.getName()), new ObserverConfiguration(HCCounter.class.getName())));
 
     Admin.initialize(props);
 

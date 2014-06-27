@@ -2,6 +2,7 @@ package phrasecount;
 
 import static phrasecount.Constants.EXPORT_DOC_COUNT_COL;
 import static phrasecount.Constants.EXPORT_SUM_COL;
+import static phrasecount.Constants.STAT_CHECK_COL;
 import static phrasecount.Constants.TYPEL;
 
 import java.util.Map.Entry;
@@ -60,6 +61,11 @@ public class HCCounter extends AbstractObserver {
     }
 
     return sum;
+  }
+
+  @Override
+  public ObservedColumn getObservedColumn() {
+    return new ObservedColumn(STAT_CHECK_COL, NotificationType.WEAK);
   }
 
 }

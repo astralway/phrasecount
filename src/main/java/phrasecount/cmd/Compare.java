@@ -1,9 +1,9 @@
 package phrasecount.cmd;
 
-import static accismus.api.config.AccismusProperties.ACCUMULO_INSTANCE_PROP;
-import static accismus.api.config.AccismusProperties.ACCUMULO_PASSWORD_PROP;
-import static accismus.api.config.AccismusProperties.ACCUMULO_USER_PROP;
-import static accismus.api.config.AccismusProperties.ZOOKEEPER_CONNECT_PROP;
+import static accismus.api.config.ConnectionProperties.ACCUMULO_INSTANCE_PROP;
+import static accismus.api.config.ConnectionProperties.ACCUMULO_PASSWORD_PROP;
+import static accismus.api.config.ConnectionProperties.ACCUMULO_USER_PROP;
+import static accismus.api.config.ConnectionProperties.ZOOKEEPER_CONNECT_PROP;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -28,7 +28,7 @@ import org.apache.hadoop.io.Text;
 import phrasecount.cmd.Print.PhraseCount;
 import accismus.api.Snapshot;
 import accismus.api.SnapshotFactory;
-import accismus.api.config.AccismusProperties;
+import accismus.api.config.ConnectionProperties;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
@@ -73,7 +73,7 @@ public class Compare {
       System.exit(-1);
     }
 
-    Properties props = new AccismusProperties(new File(args[0]));
+    Properties props = new ConnectionProperties(new File(args[0]));
 
     SnapshotFactory snapFact = new SnapshotFactory(props);
     try {

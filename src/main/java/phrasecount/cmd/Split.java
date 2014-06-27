@@ -1,9 +1,9 @@
 package phrasecount.cmd;
 
-import static accismus.api.config.AccismusProperties.ACCUMULO_INSTANCE_PROP;
-import static accismus.api.config.AccismusProperties.ACCUMULO_PASSWORD_PROP;
-import static accismus.api.config.AccismusProperties.ACCUMULO_USER_PROP;
-import static accismus.api.config.AccismusProperties.ZOOKEEPER_CONNECT_PROP;
+import static accismus.api.config.ConnectionProperties.ACCUMULO_INSTANCE_PROP;
+import static accismus.api.config.ConnectionProperties.ACCUMULO_PASSWORD_PROP;
+import static accismus.api.config.ConnectionProperties.ACCUMULO_USER_PROP;
+import static accismus.api.config.ConnectionProperties.ZOOKEEPER_CONNECT_PROP;
 
 import java.io.File;
 import java.util.Properties;
@@ -15,7 +15,7 @@ import org.apache.accumulo.core.client.ZooKeeperInstance;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.hadoop.io.Text;
 
-import accismus.api.config.AccismusProperties;
+import accismus.api.config.ConnectionProperties;
 
 
 /**
@@ -29,7 +29,7 @@ public class Split {
       System.exit(-1);
     }
 
-    Properties props = new AccismusProperties(new File(args[0]));
+    Properties props = new ConnectionProperties(new File(args[0]));
     ZooKeeperInstance zki = new ZooKeeperInstance(props.getProperty(ACCUMULO_INSTANCE_PROP), props.getProperty(ZOOKEEPER_CONNECT_PROP));
     Connector conn = zki.getConnector(props.getProperty(ACCUMULO_USER_PROP), new PasswordToken(props.getProperty(ACCUMULO_PASSWORD_PROP)));
 
