@@ -1,9 +1,10 @@
 package phrasecount.cmd;
 
-import static accismus.api.config.ConnectionProperties.ACCUMULO_INSTANCE_PROP;
-import static accismus.api.config.ConnectionProperties.ACCUMULO_PASSWORD_PROP;
-import static accismus.api.config.ConnectionProperties.ACCUMULO_USER_PROP;
-import static accismus.api.config.ConnectionProperties.ZOOKEEPER_CONNECT_PROP;
+import static io.fluo.api.config.ConnectionProperties.ACCUMULO_INSTANCE_PROP;
+import static io.fluo.api.config.ConnectionProperties.ACCUMULO_PASSWORD_PROP;
+import static io.fluo.api.config.ConnectionProperties.ACCUMULO_USER_PROP;
+import static io.fluo.api.config.ConnectionProperties.ZOOKEEPER_CONNECT_PROP;
+import io.fluo.api.config.ConnectionProperties;
 
 import java.io.File;
 import java.util.Properties;
@@ -15,17 +16,15 @@ import org.apache.accumulo.core.client.ZooKeeperInstance;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.hadoop.io.Text;
 
-import accismus.api.config.ConnectionProperties;
-
 
 /**
- * Utiltiy to add splits to the Accumulo table used by Accismus.
+ * Utiltiy to add splits to the Accumulo table used by Fluo.
  */
 
 public class Split {
   public static void main(String[] args) throws Exception {
     if (args.length != 2) {
-      System.err.println("Usage : " + Split.class.getName() + " <accismus props file> <table name>");
+      System.err.println("Usage : " + Split.class.getName() + " <fluo props file> <table name>");
       System.exit(-1);
     }
 

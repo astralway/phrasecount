@@ -2,7 +2,7 @@ Phrase Count
 ============
 
 An example application that computes phrase counts for unique documents using
-Accismus. Each new unique document that is added causes phrase counts to be
+Fluo. Each new unique document that is added causes phrase counts to be
 incremented. Unique documents have reference counts based on the number of
 locations that point to them.  When a unique document is no longer referenced
 by any location, then the phrase counts will be decremented appropriately.  
@@ -38,12 +38,12 @@ phrase:&lt;phrase&gt; | export:sum              | &lt;int&gt;       | Phrase sum
 Code Overview
 -------------
 
-Documents are loaded into the Accismus table by [DocumentLoader][1] which is
+Documents are loaded into the Fluo table by [DocumentLoader][1] which is
 executed by [Load][2].  [DocumentLoader][1] handles reference counting of
 unique documents and may set a notification causing [PhraseCounter][3] to
 execute.  [PhraseCounter][3] increments or decrements global phrase counts for
 all phrases found in a unique document.  [PhraseCounter][3] is run by the
-Accismus worker process and is configured by [Mini][4] when using java to run
+Fluo worker process and is configured by [Mini][4] when using java to run
 this example.  [PhraseCounter][3] may set a notifcation which causes
 [PhraseExporter][5] to run.  [PhraseExporter][5] exports phrases to a file with
 a sequence number.  The sequence number allows you to know which version of the
@@ -60,9 +60,9 @@ Building
 --------
 
 After cloning this repo, build with following command.  May need to install
-Accismus into your local maven repo first.  Accismus is rapidly chaning, if
+Fluo into your local maven repo first.  Fluo is rapidly chaning, if
 this project does not compile after git pull you may need to pull and install
-Accismus again.
+Fluo again.
 
 ```
 mvn package 
@@ -71,16 +71,16 @@ mvn package
 Running Mini Instance
 ---------------------
 
-If you do not have Accumulo, Hadoop, Zookeeper, and Accismus setup, then you
-can start an MiniAccismus instance with the following command.  This command
-will create an `accismus.properties` that can be used by the following commands
+If you do not have Accumulo, Hadoop, Zookeeper, and Fluo setup, then you
+can start an MiniFluo instance with the following command.  This command
+will create an `fluo.properties` that can be used by the following commands
 in this example.
 
 ```
-mvn exec:java -Dexec.mainClass=phrasecount.cmd.Mini -Dexec.args="/tmp/mac accismus.properties" -Dexec.classpathScope=test 
+mvn exec:java -Dexec.mainClass=phrasecount.cmd.Mini -Dexec.args="/tmp/mac fluo.properties" -Dexec.classpathScope=test 
 ```
 
-After the mini command prints out `Wrote : accismus.properties` then its ready to use. 
+After the mini command prints out `Wrote : fluo.properties` then its ready to use. 
 
 This command will automatically configure [PhraseExporter][5] to export phrases
 to an Accumulo table named `dataExport`.
@@ -97,7 +97,7 @@ Adding documents
 The following command will scan the directory `$TXT_DIR` looking for .txt files to add.  The scan is recursive.  
 
 ```
-mvn exec:java -Dexec.mainClass=phrasecount.cmd.Load -Dexec.args="accismus.properties $TXT_DIR" -Dexec.classpathScope=test
+mvn exec:java -Dexec.mainClass=phrasecount.cmd.Load -Dexec.args="fluo.properties $TXT_DIR" -Dexec.classpathScope=test
 ```
 
 Printing phrases
@@ -108,7 +108,7 @@ Try modifying a document you added and running the load command again, you
 should eventually see the phrase counts change.
 
 ```
-mvn exec:java -Dexec.mainClass=phrasecount.cmd.Print -Dexec.args="accismus.properties" -Dexec.classpathScope=test
+mvn exec:java -Dexec.mainClass=phrasecount.cmd.Print -Dexec.args="fluo.properties" -Dexec.classpathScope=test
 ```
 
 The command will print out the number of unique documents and the number
@@ -121,11 +121,11 @@ Comparing exported phrases
 --------------------------
 
 After all export transactions have run, the phrase counts in the Accumulo
-export table should be the same as those stored in the Accismus table.  The
+export table should be the same as those stored in the Fluo table.  The
 following utility will iterate over the two and look for differernces.
 
 ```
-mvn exec:java -Dexec.mainClass=phrasecount.cmd.Compare -Dexec.args="accismus.properties data dataExport" -Dexec.classpathScope=test
+mvn exec:java -Dexec.mainClass=phrasecount.cmd.Compare -Dexec.args="fluo.properties data dataExport" -Dexec.classpathScope=test
 ```
 
 If this command prints nothing, then all is good.  If things are not good, then
@@ -134,34 +134,34 @@ following to log4j.properties will enable this tracing.  This config is
 commented out in the test [log4j.properties][7] file.
 
 ```
-log4j.logger.accismus.impl.TracingTransaction=TRACE
+log4j.logger.fluo.impl.TracingTransaction=TRACE
 ```
 
 Deploying example
 -----------------
 
-The following instructions cover running this example on an installed Accismus
-instance. Copy this jar to the Accismus observer directory.
+The following instructions cover running this example on an installed Fluo
+instance. Copy this jar to the Fluo observer directory.
 
 ```
-cp target/phrasecount-0.0.1-SNAPSHOT.jar $ACCISMUS_HOME/lib/observers
+cp target/phrasecount-0.0.1-SNAPSHOT.jar $FLUO_HOME/lib/observers
 ```
 
-Modify `$ACCISMUS_HOME/conf/initialization.properties` and replace the observer
+Modify `$FLUO_HOME/conf/initialization.properties` and replace the observer
 lines with the following:
 
 ```
-accismus.worker.observer.0=index,check,,phrasecount.PhraseCounter
-accismus.worker.observer.1=export,check,,phrasecount.PhraseExporter,sink=accumulo,instance=<instance name>,zookeepers=<zookeepers>,user=<user>,password=<password>,table=<table>
-accismus.worker.observer.weak.0=stat,check,,phrasecount.HCCounter
+io.fluo.worker.observer.0=index,check,,phrasecount.PhraseCounter
+io.fluo.worker.observer.1=export,check,,phrasecount.PhraseExporter,sink=accumulo,instance=<instance name>,zookeepers=<zookeepers>,user=<user>,password=<password>,table=<table>
+io.fluo.worker.observer.weak.0=stat,check,,phrasecount.HCCounter
 ```
 
 The line with PhraseExporter has configuration options that need to be
 configured to the Accumulo table where you want phrases to be exported.
 
-Now initialize and start Accismus as outlined in its docs. Once started the
+Now initialize and start Fluo as outlined in its docs. Once started the
 load and print commands above can be run passing in
-`$ACCISMUS_HOME/conf/accismus.properties`
+`$FLUO_HOME/conf/fluo.properties`
 
 Generating data
 ---------------

@@ -7,6 +7,11 @@ import static phrasecount.Constants.EXPORT_SUM_COL;
 import static phrasecount.Constants.STAT_DOC_COUNT_COL;
 import static phrasecount.Constants.STAT_SUM_COL;
 import static phrasecount.Constants.TYPEL;
+import io.fluo.api.AbstractObserver;
+import io.fluo.api.Column;
+import io.fluo.api.Transaction;
+import io.fluo.api.types.TypedSnapshot.Value;
+import io.fluo.api.types.TypedTransaction;
 
 import java.util.Map;
 
@@ -15,11 +20,6 @@ import org.apache.accumulo.core.data.ByteSequence;
 import phrasecount.export.AccumuloExporter;
 import phrasecount.export.Exporter;
 import phrasecount.export.FileExporter;
-import accismus.api.AbstractObserver;
-import accismus.api.Column;
-import accismus.api.Transaction;
-import accismus.api.types.TypedSnapshot.Value;
-import accismus.api.types.TypedTransaction;
 
 import com.google.common.collect.Sets;
 
@@ -87,7 +87,7 @@ public class PhraseExporter extends AbstractObserver {
     int exportSum = columns.get(EXPORT_SUM_COL).toInteger();
     int exportDocCount = columns.get(EXPORT_DOC_COUNT_COL).toInteger();
 
-    // TODO its possible that the Accismus column times stamp could be used as a seq number
+    // TODO its possible that the Fluo column times stamp could be used as a seq number
     int seqNum = columns.get(EXPORT_SEQ_COL).toInteger(0);
 
     // check to see if the current value has changed and another export is needed

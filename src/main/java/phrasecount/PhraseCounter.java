@@ -11,6 +11,11 @@ import static phrasecount.Constants.STAT_CHECK_COL;
 import static phrasecount.Constants.STAT_DOC_COUNT_COL;
 import static phrasecount.Constants.STAT_SUM_COL;
 import static phrasecount.Constants.TYPEL;
+import io.fluo.api.AbstractObserver;
+import io.fluo.api.Column;
+import io.fluo.api.Transaction;
+import io.fluo.api.types.TypedSnapshot.Value;
+import io.fluo.api.types.TypedTransaction;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,12 +26,6 @@ import java.util.Random;
 import org.apache.accumulo.core.data.ByteSequence;
 import org.apache.commons.math.stat.descriptive.moment.Mean;
 import org.apache.commons.math.stat.descriptive.moment.StandardDeviation;
-
-import accismus.api.AbstractObserver;
-import accismus.api.Column;
-import accismus.api.Transaction;
-import accismus.api.types.TypedSnapshot.Value;
-import accismus.api.types.TypedTransaction;
 
 import com.google.common.collect.Sets;
 

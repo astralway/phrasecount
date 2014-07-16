@@ -22,16 +22,16 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import accismus.api.Admin;
-import accismus.api.Column;
-import accismus.api.LoaderExecutor;
-import accismus.api.SnapshotFactory;
-import accismus.api.config.InitializationProperties;
-import accismus.api.config.LoaderExecutorProperties;
-import accismus.api.config.ObserverConfiguration;
-import accismus.api.test.MiniAccismus;
-import accismus.api.types.TypedSnapshot;
-import accismus.api.types.TypedSnapshot.Value;
+import io.fluo.api.Admin;
+import io.fluo.api.Column;
+import io.fluo.api.LoaderExecutor;
+import io.fluo.api.SnapshotFactory;
+import io.fluo.api.config.InitializationProperties;
+import io.fluo.api.config.LoaderExecutorProperties;
+import io.fluo.api.config.ObserverConfiguration;
+import io.fluo.api.test.MiniFluo;
+import io.fluo.api.types.TypedSnapshot;
+import io.fluo.api.types.TypedSnapshot.Value;
 
 import com.google.common.collect.Sets;
 
@@ -41,7 +41,7 @@ public class PhraseCounterTest {
   public static TemporaryFolder folder = new TemporaryFolder();
   public static MiniAccumuloCluster cluster;
   private static InitializationProperties props;
-  private static MiniAccismus miniAccismus;
+  private static MiniFluo miniFluo;
   private static final PasswordToken password = new PasswordToken("secret");
   private static AtomicInteger tableCounter = new AtomicInteger(1);
 
@@ -60,13 +60,13 @@ public class PhraseCounterTest {
   }
 
   @Before
-  public void setUpAccismus() throws Exception {
+  public void setUpFluo() throws Exception {
     // TODO add helper code to make this shorter
     props = new InitializationProperties();
     props.setAccumuloInstance(cluster.getInstanceName());
     props.setAccumuloUser("root");
     props.setAccumuloPassword("secret");
-    props.setZookeeperRoot("/accismus");
+    props.setZookeeperRoot("/fluo");
     props.setZookeepers(cluster.getZooKeepers());
     props.setClearZookeeper(true);
     props.setAccumuloTable("data" + tableCounter.getAndIncrement());
@@ -75,13 +75,13 @@ public class PhraseCounterTest {
 
     Admin.initialize(props);
 
-    miniAccismus = new MiniAccismus(props);
-    miniAccismus.start();
+    miniFluo = new MiniFluo(props);
+    miniFluo.start();
   }
 
   @After
-  public void tearDownAccismus() throws Exception {
-    miniAccismus.stop();
+  public void tearDownFluo() throws Exception {
+    miniFluo.stop();
   }
   
   static class PhraseInfo {
@@ -126,7 +126,7 @@ public class PhraseCounterTest {
   private void loadDocument(LoaderExecutor le, String uri, String content) {
     Document doc = new Document(uri, content);
     le.execute(new DocumentLoader(doc));
-    miniAccismus.waitForObservers();
+    miniFluo.waitForObservers();
   }
 
   @Test
@@ -249,7 +249,7 @@ public class PhraseCounterTest {
       le.execute(new DocumentLoader(doc));
     }
 
-    miniAccismus.waitForObservers();
+    miniFluo.waitForObservers();
   }
 }
   

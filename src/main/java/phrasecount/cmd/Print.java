@@ -1,5 +1,13 @@
 package phrasecount.cmd;
 
+import io.fluo.api.Column;
+import io.fluo.api.ColumnIterator;
+import io.fluo.api.RowIterator;
+import io.fluo.api.ScannerConfiguration;
+import io.fluo.api.Snapshot;
+import io.fluo.api.SnapshotFactory;
+import io.fluo.api.config.ConnectionProperties;
+
 import java.io.File;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -8,13 +16,6 @@ import org.apache.accumulo.core.data.ByteSequence;
 import org.apache.accumulo.core.data.Range;
 
 import phrasecount.Constants;
-import accismus.api.Column;
-import accismus.api.ColumnIterator;
-import accismus.api.RowIterator;
-import accismus.api.ScannerConfiguration;
-import accismus.api.Snapshot;
-import accismus.api.SnapshotFactory;
-import accismus.api.config.ConnectionProperties;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
@@ -70,7 +71,7 @@ public class Print {
 
   public static void main(String[] args) throws Exception {
     if (args.length != 1) {
-      System.err.println("Usage : " + Print.class.getName() + " <accismus props file>");
+      System.err.println("Usage : " + Print.class.getName() + " <fluo props file>");
       System.exit(-1);
     }
 

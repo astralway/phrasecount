@@ -4,19 +4,18 @@ import static phrasecount.Constants.EXPORT_DOC_COUNT_COL;
 import static phrasecount.Constants.EXPORT_SUM_COL;
 import static phrasecount.Constants.STAT_CHECK_COL;
 import static phrasecount.Constants.TYPEL;
+import io.fluo.api.AbstractObserver;
+import io.fluo.api.Column;
+import io.fluo.api.ColumnIterator;
+import io.fluo.api.RowIterator;
+import io.fluo.api.ScannerConfiguration;
+import io.fluo.api.Transaction;
+import io.fluo.api.types.TypedTransaction;
 
 import java.util.Map.Entry;
 
 import org.apache.accumulo.core.data.ByteSequence;
 import org.apache.accumulo.core.data.Range;
-
-import accismus.api.AbstractObserver;
-import accismus.api.Column;
-import accismus.api.ColumnIterator;
-import accismus.api.RowIterator;
-import accismus.api.ScannerConfiguration;
-import accismus.api.Transaction;
-import accismus.api.types.TypedTransaction;
 
 /**
  * This Observer processes high cardinality phrases. It sums up all of the random stat columns that were set.

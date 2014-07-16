@@ -5,9 +5,9 @@ import static phrasecount.Constants.DOC_HASH_COL;
 import static phrasecount.Constants.DOC_REF_COUNT_COL;
 import static phrasecount.Constants.INDEX_CHECK_COL;
 import static phrasecount.Constants.TYPEL;
-import accismus.api.Loader;
-import accismus.api.Transaction;
-import accismus.api.types.TypedTransaction;
+import io.fluo.api.Loader;
+import io.fluo.api.Transaction;
+import io.fluo.api.types.TypedTransaction;
 
 /**
  * Executes document load transactions which dedupe and reference count documents.  IF needed, the observer that updates phrase counts is triggered.

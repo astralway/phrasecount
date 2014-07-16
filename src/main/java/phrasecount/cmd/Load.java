@@ -1,20 +1,21 @@
 package phrasecount.cmd;
 
+import io.fluo.api.LoaderExecutor;
+import io.fluo.api.config.LoaderExecutorProperties;
+
 import java.io.File;
 
 import org.apache.commons.io.FileUtils;
 
 import phrasecount.Document;
 import phrasecount.DocumentLoader;
-import accismus.api.LoaderExecutor;
-import accismus.api.config.LoaderExecutorProperties;
 
 public class Load {
 
   public static void main(String[] args) throws Exception {
 
     if(args.length != 2){
-      System.err.println("Usage : "+Load.class.getName()+" <accismus props file> <txt file dir>");
+      System.err.println("Usage : "+Load.class.getName()+" <fluo props file> <txt file dir>");
       System.exit(-1);
     }
     

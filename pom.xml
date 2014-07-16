@@ -43,8 +43,8 @@
       <version>1.32</version>
     </dependency>
     <dependency>
-      <groupId>accismus</groupId>
-      <artifactId>accismus-core</artifactId>
+      <groupId>fluo</groupId>
+      <artifactId>fluo-core</artifactId>
       <version>1.0.0-alpha-1-SNAPSHOT</version>
     </dependency>
     <dependency>

@@ -1,9 +1,12 @@
 package phrasecount.cmd;
 
-import static accismus.api.config.ConnectionProperties.ACCUMULO_INSTANCE_PROP;
-import static accismus.api.config.ConnectionProperties.ACCUMULO_PASSWORD_PROP;
-import static accismus.api.config.ConnectionProperties.ACCUMULO_USER_PROP;
-import static accismus.api.config.ConnectionProperties.ZOOKEEPER_CONNECT_PROP;
+import static io.fluo.api.config.ConnectionProperties.ACCUMULO_INSTANCE_PROP;
+import static io.fluo.api.config.ConnectionProperties.ACCUMULO_PASSWORD_PROP;
+import static io.fluo.api.config.ConnectionProperties.ACCUMULO_USER_PROP;
+import static io.fluo.api.config.ConnectionProperties.ZOOKEEPER_CONNECT_PROP;
+import io.fluo.api.Snapshot;
+import io.fluo.api.SnapshotFactory;
+import io.fluo.api.config.ConnectionProperties;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -26,16 +29,13 @@ import org.apache.accumulo.core.security.Authorizations;
 import org.apache.hadoop.io.Text;
 
 import phrasecount.cmd.Print.PhraseCount;
-import accismus.api.Snapshot;
-import accismus.api.SnapshotFactory;
-import accismus.api.config.ConnectionProperties;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.PeekingIterator;
 
 /**
- * A utility to compare the phrase counts stored in the Accismus table to those stored in the export table.
+ * A utility to compare the phrase counts stored in the Fluo table to those stored in the export table.
  */
 
 public class Compare {
@@ -69,7 +69,7 @@ public class Compare {
 
   public static void main(String[] args) throws Exception {
     if (args.length != 3) {
-      System.err.println("Usage : " + Compare.class.getName() + " <accismus props file> <accismus table name> <export table name>");
+      System.err.println("Usage : " + Compare.class.getName() + " <fluo props file> <fluo table name> <export table name>");
       System.exit(-1);
     }
 
@@ -79,30 +79,30 @@ public class Compare {
     try {
       Snapshot snap = snapFact.createSnapshot();
 
-      PeekingIterator<PhraseCount> accismusIter = Iterators.peekingIterator(Print.createPhraseIterator(snap));
+      PeekingIterator<PhraseCount> fluoIter = Iterators.peekingIterator(Print.createPhraseIterator(snap));
       PeekingIterator<PhraseCount> accumuloIter = Iterators.peekingIterator(createPhraseIterator(props, args[2]));
 
-      while (accumuloIter.hasNext() && accismusIter.hasNext()) {
+      while (accumuloIter.hasNext() && fluoIter.hasNext()) {
         PhraseCount accumuloPhrase = accumuloIter.peek();
-        PhraseCount accismusPhrase = accismusIter.peek();
+        PhraseCount fluoPhrase = fluoIter.peek();
 
-        if (accismusPhrase.equals(accumuloPhrase)) {
-          accismusIter.next();
+        if (fluoPhrase.equals(accumuloPhrase)) {
+          fluoIter.next();
           accumuloIter.next();
           continue;
         }
 
-        int comp = accismusPhrase.phrase.compareTo(accumuloPhrase.phrase);
+        int comp = fluoPhrase.phrase.compareTo(accumuloPhrase.phrase);
 
         if (comp == 0) {
-          accismusIter.next();
+          fluoIter.next();
           accumuloIter.next();
-          System.out.printf("Counts differ    : %7d %7d %7d %7d '%s'\n", accismusPhrase.docCount, accismusPhrase.sum, accumuloPhrase.docCount,
-              accumuloPhrase.sum, accismusPhrase.phrase);
+          System.out.printf("Counts differ    : %7d %7d %7d %7d '%s'\n", fluoPhrase.docCount, fluoPhrase.sum, accumuloPhrase.docCount,
+              accumuloPhrase.sum, fluoPhrase.phrase);
         }
         if (comp < 0) {
-          System.out.printf("Only in Accismus : %7d %7d '%s'\n", accismusPhrase.docCount, accismusPhrase.sum, accismusPhrase.phrase);
-          accismusIter.next();
+          System.out.printf("Only in Fluo : %7d %7d '%s'\n", fluoPhrase.docCount, fluoPhrase.sum, fluoPhrase.phrase);
+          fluoIter.next();
         } else {
           System.out.printf("Only in Accumulo : %7d %7d '%s'\n", accumuloPhrase.docCount, accumuloPhrase.sum, accumuloPhrase.phrase);
           accumuloIter.next();
@@ -114,9 +114,9 @@ public class Compare {
         System.out.printf("Only in Accumulo : %7d %7d '%s'\n", accumuloPhrase.docCount, accumuloPhrase.sum, accumuloPhrase.phrase);
       }
 
-      while (accismusIter.hasNext()) {
-        PhraseCount accismusPhrase = accismusIter.next();
-        System.out.printf("Only in Accismus : %7d %7d '%s'\n", accismusPhrase.docCount, accismusPhrase.sum, accismusPhrase.phrase);
+      while (fluoIter.hasNext()) {
+        PhraseCount fluoPhrase = fluoIter.next();
+        System.out.printf("Only in Fluo : %7d %7d '%s'\n", fluoPhrase.docCount, fluoPhrase.sum, fluoPhrase.phrase);
       }
     } finally {
       snapFact.close();

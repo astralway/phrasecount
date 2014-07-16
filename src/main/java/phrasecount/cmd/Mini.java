@@ -1,5 +1,11 @@
 package phrasecount.cmd;
 
+import io.fluo.api.Admin;
+import io.fluo.api.config.ConnectionProperties;
+import io.fluo.api.config.InitializationProperties;
+import io.fluo.api.config.ObserverConfiguration;
+import io.fluo.api.test.MiniFluo;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -19,11 +25,6 @@ import org.apache.accumulo.minicluster.ServerType;
 import phrasecount.HCCounter;
 import phrasecount.PhraseCounter;
 import phrasecount.PhraseExporter;
-import accismus.api.Admin;
-import accismus.api.config.ConnectionProperties;
-import accismus.api.config.InitializationProperties;
-import accismus.api.config.ObserverConfiguration;
-import accismus.api.test.MiniAccismus;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
@@ -83,7 +84,7 @@ public class Mini {
     aprops.setAccumuloInstance(cluster.getInstanceName());
     aprops.setAccumuloUser("root");
     aprops.setAccumuloPassword("secret");
-    aprops.setZookeeperRoot("/accismus");
+    aprops.setZookeeperRoot("/fluo");
     aprops.setZookeepers(cluster.getZooKeepers());
 
     InitializationProperties props = new InitializationProperties(aprops);
@@ -101,8 +102,8 @@ public class Mini {
 
     Admin.initialize(props);
 
-    MiniAccismus miniAccismus = new MiniAccismus(props);
-    miniAccismus.start();
+    MiniFluo miniFluo = new MiniFluo(props);
+    miniFluo.start();
 
     Writer fw = new BufferedWriter(new FileWriter(new File(params.args.get(1))));
     aprops.store(fw, null);

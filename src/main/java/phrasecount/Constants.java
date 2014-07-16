@@ -1,8 +1,8 @@
 package phrasecount;
 
-import accismus.api.Column;
-import accismus.api.types.StringEncoder;
-import accismus.api.types.TypeLayer;
+import io.fluo.api.Column;
+import io.fluo.api.types.StringEncoder;
+import io.fluo.api.types.TypeLayer;
 
 public class Constants {
   // set the encoder to use in once place
