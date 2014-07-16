@@ -151,9 +151,9 @@ Modify `$FLUO_HOME/conf/initialization.properties` and replace the observer
 lines with the following:
 
 ```
-io.fluo.worker.observer.0=index,check,,phrasecount.PhraseCounter
-io.fluo.worker.observer.1=export,check,,phrasecount.PhraseExporter,sink=accumulo,instance=<instance name>,zookeepers=<zookeepers>,user=<user>,password=<password>,table=<table>
-io.fluo.worker.observer.weak.0=stat,check,,phrasecount.HCCounter
+fluo.worker.observer.0=index,check,,phrasecount.PhraseCounter
+fluo.worker.observer.1=export,check,,phrasecount.PhraseExporter,sink=accumulo,instance=<instance name>,zookeepers=<zookeepers>,user=<user>,password=<password>,table=<table>
+fluo.worker.observer.weak.0=stat,check,,phrasecount.HCCounter
 ```
 
 The line with PhraseExporter has configuration options that need to be
