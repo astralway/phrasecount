@@ -12,6 +12,7 @@ import static phrasecount.Constants.STAT_DOC_COUNT_COL;
 import static phrasecount.Constants.STAT_SUM_COL;
 import static phrasecount.Constants.TYPEL;
 import io.fluo.api.AbstractObserver;
+import io.fluo.api.Bytes;
 import io.fluo.api.Column;
 import io.fluo.api.Transaction;
 import io.fluo.api.types.TypedSnapshot.Value;
@@ -23,7 +24,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 
-import org.apache.accumulo.core.data.ByteSequence;
 import org.apache.commons.math.stat.descriptive.moment.Mean;
 import org.apache.commons.math.stat.descriptive.moment.StandardDeviation;
 
@@ -40,7 +40,7 @@ public class PhraseCounter extends AbstractObserver {
   }
 
   @Override
-  public void process(Transaction tx, ByteSequence row, Column col) throws Exception {
+  public void process(Transaction tx, Bytes row, Column col) throws Exception {
 
     TypedTransaction ttx = TYPEL.transaction(tx);
 
@@ -65,7 +65,7 @@ public class PhraseCounter extends AbstractObserver {
     return new ObservedColumn(INDEX_CHECK_COL, NotificationType.STRONG);
   }
 
-  private void deleteDocument(TypedTransaction tx, ByteSequence row) {
+  private void deleteDocument(TypedTransaction tx, Bytes row) {
     // TODO it would probably be useful to have a deleteRow method on Transaction... this method could start off w/ a simple implementation and later be
     // optimized... or could have a delete range option
 
@@ -98,7 +98,7 @@ public class PhraseCounter extends AbstractObserver {
     return mean.getResult() + (1 * stddev.getResult());
   }
 
-  private void updatePhraseCounts(TypedTransaction ttx, ByteSequence row, int multiplier) throws Exception {
+  private void updatePhraseCounts(TypedTransaction ttx, Bytes row, int multiplier) throws Exception {
     String content = ttx.get().row(row).col(Constants.DOC_CONTENT_COL).toString();
 
     // this makes the assumption that the implementation of getPhrases is invariant. This is probably a bad assumption. A possible way to make this more robust
@@ -160,7 +160,7 @@ public class PhraseCounter extends AbstractObserver {
   }
 
   // choose a rand column qualifer and updated it, then trigger a special observer that deals with these random qualifiers
-  private void updateHighCardinality(TypedTransaction ttx, ByteSequence row, int multiplier, Map<String,Integer> highCardinalityPhrases) throws Exception {
+  private void updateHighCardinality(TypedTransaction ttx, Bytes row, int multiplier, Map<String,Integer> highCardinalityPhrases) throws Exception {
     if (highCardinalityPhrases.size() == 0)
       return;
 
@@ -188,7 +188,7 @@ public class PhraseCounter extends AbstractObserver {
 
   }
 
-  private IndexStatus getStatus(TypedTransaction tx, ByteSequence row) throws Exception {
+  private IndexStatus getStatus(TypedTransaction tx, Bytes row) throws Exception {
     String status = tx.get().row(row).col(INDEX_STATUS_COL).toString();
 
     if (status == null)

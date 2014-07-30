@@ -1,5 +1,6 @@
 package phrasecount.cmd;
 
+import io.fluo.api.Bytes;
 import io.fluo.api.Column;
 import io.fluo.api.ColumnIterator;
 import io.fluo.api.RowIterator;
@@ -12,7 +13,6 @@ import java.io.File;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-import org.apache.accumulo.core.data.ByteSequence;
 import org.apache.accumulo.core.data.Range;
 
 import phrasecount.Constants;
@@ -44,10 +44,10 @@ public class Print {
     }
   }
 
-  static class PhraseRowTransform implements Function<Entry<ByteSequence,ColumnIterator>,PhraseCount> {
+  static class PhraseRowTransform implements Function<Entry<Bytes,ColumnIterator>,PhraseCount> {
 
     @Override
-    public PhraseCount apply(Entry<ByteSequence,ColumnIterator> input) {
+    public PhraseCount apply(Entry<Bytes,ColumnIterator> input) {
       String phrase = input.getKey().toString().substring(7);
 
       int sum = 0;
@@ -55,7 +55,7 @@ public class Print {
 
       ColumnIterator citer = input.getValue();
       while (citer.hasNext()) {
-        Entry<Column,ByteSequence> colEntry = citer.next();
+        Entry<Column,Bytes> colEntry = citer.next();
         String cq = colEntry.getKey().getQualifier().toString();
 
         if (cq.equals("sum"))
@@ -115,7 +115,7 @@ public class Print {
     RowIterator riter = snap.get(scanConfig);
     while (riter.hasNext()) {
       @SuppressWarnings("unused")
-      Entry<ByteSequence,ColumnIterator> rowEntry = riter.next();
+      Entry<Bytes,ColumnIterator> rowEntry = riter.next();
       count++;
     }
 

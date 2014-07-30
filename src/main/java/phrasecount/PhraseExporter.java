@@ -8,14 +8,13 @@ import static phrasecount.Constants.STAT_DOC_COUNT_COL;
 import static phrasecount.Constants.STAT_SUM_COL;
 import static phrasecount.Constants.TYPEL;
 import io.fluo.api.AbstractObserver;
+import io.fluo.api.Bytes;
 import io.fluo.api.Column;
 import io.fluo.api.Transaction;
 import io.fluo.api.types.TypedSnapshot.Value;
 import io.fluo.api.types.TypedTransaction;
 
 import java.util.Map;
-
-import org.apache.accumulo.core.data.ByteSequence;
 
 import phrasecount.export.AccumuloExporter;
 import phrasecount.export.Exporter;
@@ -76,7 +75,7 @@ public class PhraseExporter extends AbstractObserver {
 
   // TODO this needs test
   @Override
-  public void process(Transaction tx, ByteSequence row, Column col) throws Exception {
+  public void process(Transaction tx, Bytes row, Column col) throws Exception {
     TypedTransaction ttx = TYPEL.transaction(tx);
     
     Map<Column,Value> columns = ttx.getd(row, Sets.newHashSet(STAT_SUM_COL, STAT_DOC_COUNT_COL, EXPORT_SUM_COL, EXPORT_DOC_COUNT_COL, EXPORT_SEQ_COL));

@@ -5,6 +5,7 @@ import static phrasecount.Constants.EXPORT_SUM_COL;
 import static phrasecount.Constants.STAT_CHECK_COL;
 import static phrasecount.Constants.TYPEL;
 import io.fluo.api.AbstractObserver;
+import io.fluo.api.Bytes;
 import io.fluo.api.Column;
 import io.fluo.api.ColumnIterator;
 import io.fluo.api.RowIterator;
@@ -14,7 +15,6 @@ import io.fluo.api.types.TypedTransaction;
 
 import java.util.Map.Entry;
 
-import org.apache.accumulo.core.data.ByteSequence;
 import org.apache.accumulo.core.data.Range;
 
 /**
@@ -24,7 +24,7 @@ import org.apache.accumulo.core.data.Range;
 public class HCCounter extends AbstractObserver {
 
   @Override
-  public void process(Transaction tx, ByteSequence row, Column col) throws Exception {
+  public void process(Transaction tx, Bytes row, Column col) throws Exception {
     TypedTransaction ttx = TYPEL.transaction(tx);
 
     ScannerConfiguration scanConfig = new ScannerConfiguration();
@@ -50,10 +50,10 @@ public class HCCounter extends AbstractObserver {
   private int sumAndDelete(Transaction tx, RowIterator rowIterator) {
     int sum = 0;
     while (rowIterator.hasNext()) {
-      Entry<ByteSequence,ColumnIterator> rEntry = rowIterator.next();
+      Entry<Bytes,ColumnIterator> rEntry = rowIterator.next();
       ColumnIterator citer = rEntry.getValue();
       while (citer.hasNext()) {
-        Entry<Column,ByteSequence> cEntry = citer.next();
+        Entry<Column,Bytes> cEntry = citer.next();
         sum += Integer.parseInt(cEntry.getValue().toString());
         tx.delete(rEntry.getKey(), cEntry.getKey());
       }
