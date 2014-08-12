@@ -1,6 +1,8 @@
 package phrasecount.cmd;
 
-import io.fluo.api.LoaderExecutor;
+import io.fluo.api.client.FluoClient;
+import io.fluo.api.client.FluoFactory;
+import io.fluo.api.client.LoaderExecutor;
 import io.fluo.api.config.LoaderExecutorProperties;
 
 import java.io.File;
@@ -23,8 +25,10 @@ public class Load {
     leprops.setNumThreads(20);
     leprops.setQueueSize(40);
     
-    LoaderExecutor le = new LoaderExecutor(leprops);
-    try {
+    LoaderExecutor le = null;
+
+    try (FluoClient fluoClient = FluoFactory.newClient(leprops)) {
+      le = fluoClient.newLoaderExecutor();
       for (File txtFile : FileUtils.listFiles(new File(args[1]), new String[] {"txt"}, true)) {
         String uri = txtFile.toURI().toString();
         String content = FileUtils.readFileToString(txtFile);
@@ -33,7 +37,8 @@ public class Load {
         le.execute(new DocumentLoader(new Document(uri, content)));
       }
     } finally {
-      le.shutdown();
+      if (le != null)
+        le.shutdown();
     }
 
     // TODO figure what threads are hanging around

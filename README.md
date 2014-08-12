@@ -134,7 +134,7 @@ following to log4j.properties will enable this tracing.  This config is
 commented out in the test [log4j.properties][7] file.
 
 ```
-log4j.logger.io.fluo.impl.TracingTransaction=TRACE
+log4j.logger.io.fluo.core.impl.TracingTransaction=TRACE
 ```
 
 Deploying example

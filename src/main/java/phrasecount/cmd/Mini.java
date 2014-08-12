@@ -1,10 +1,10 @@
 package phrasecount.cmd;
 
-import io.fluo.api.Admin;
+import io.fluo.api.client.FluoFactory;
 import io.fluo.api.config.ConnectionProperties;
 import io.fluo.api.config.InitializationProperties;
 import io.fluo.api.config.ObserverConfiguration;
-import io.fluo.api.test.MiniFluo;
+import io.fluo.core.impl.MiniFluo;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -100,7 +100,7 @@ public class Mini {
     observers.add(new ObserverConfiguration(HCCounter.class.getName()));
     props.setObservers(observers);
 
-    Admin.initialize(props);
+    FluoFactory.newAdmin(props).initialize(props);
 
     MiniFluo miniFluo = new MiniFluo(props);
     miniFluo.start();

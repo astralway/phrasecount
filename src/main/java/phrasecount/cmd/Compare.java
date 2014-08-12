@@ -4,8 +4,9 @@ import static io.fluo.api.config.ConnectionProperties.ACCUMULO_INSTANCE_PROP;
 import static io.fluo.api.config.ConnectionProperties.ACCUMULO_PASSWORD_PROP;
 import static io.fluo.api.config.ConnectionProperties.ACCUMULO_USER_PROP;
 import static io.fluo.api.config.ConnectionProperties.ZOOKEEPER_CONNECT_PROP;
-import io.fluo.api.Snapshot;
-import io.fluo.api.SnapshotFactory;
+import io.fluo.api.client.FluoClient;
+import io.fluo.api.client.FluoFactory;
+import io.fluo.api.client.Snapshot;
 import io.fluo.api.config.ConnectionProperties;
 
 import java.io.File;
@@ -75,9 +76,8 @@ public class Compare {
 
     Properties props = new ConnectionProperties(new File(args[0]));
 
-    SnapshotFactory snapFact = new SnapshotFactory(props);
-    try {
-      Snapshot snap = snapFact.createSnapshot();
+    try (FluoClient fluoClient = FluoFactory.newClient(props)) {
+      Snapshot snap = fluoClient.newSnapshot();
 
       PeekingIterator<PhraseCount> fluoIter = Iterators.peekingIterator(Print.createPhraseIterator(snap));
       PeekingIterator<PhraseCount> accumuloIter = Iterators.peekingIterator(createPhraseIterator(props, args[2]));
@@ -118,8 +118,6 @@ public class Compare {
         PhraseCount fluoPhrase = fluoIter.next();
         System.out.printf("Only in Fluo : %7d %7d '%s'\n", fluoPhrase.docCount, fluoPhrase.sum, fluoPhrase.phrase);
       }
-    } finally {
-      snapFact.close();
     }
     // TODO figure what threads are hanging around
     System.exit(0);

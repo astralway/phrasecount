@@ -5,8 +5,8 @@ import static phrasecount.Constants.DOC_HASH_COL;
 import static phrasecount.Constants.DOC_REF_COUNT_COL;
 import static phrasecount.Constants.INDEX_CHECK_COL;
 import static phrasecount.Constants.TYPEL;
-import io.fluo.api.Loader;
-import io.fluo.api.Transaction;
+import io.fluo.api.client.Loader;
+import io.fluo.api.client.Transaction;
 import io.fluo.api.types.TypedTransaction;
 
 /**

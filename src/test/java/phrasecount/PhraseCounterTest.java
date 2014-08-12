@@ -5,6 +5,16 @@ import static phrasecount.Constants.DOC_REF_COUNT_COL;
 import static phrasecount.Constants.STAT_DOC_COUNT_COL;
 import static phrasecount.Constants.STAT_SUM_COL;
 import static phrasecount.Constants.TYPEL;
+import io.fluo.api.client.FluoClient;
+import io.fluo.api.client.FluoFactory;
+import io.fluo.api.client.LoaderExecutor;
+import io.fluo.api.config.InitializationProperties;
+import io.fluo.api.config.LoaderExecutorProperties;
+import io.fluo.api.config.ObserverConfiguration;
+import io.fluo.api.data.Column;
+import io.fluo.api.types.TypedSnapshot;
+import io.fluo.api.types.TypedSnapshot.Value;
+import io.fluo.core.impl.MiniFluo;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -21,17 +31,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-
-import io.fluo.api.Admin;
-import io.fluo.api.Column;
-import io.fluo.api.LoaderExecutor;
-import io.fluo.api.SnapshotFactory;
-import io.fluo.api.config.InitializationProperties;
-import io.fluo.api.config.LoaderExecutorProperties;
-import io.fluo.api.config.ObserverConfiguration;
-import io.fluo.api.test.MiniFluo;
-import io.fluo.api.types.TypedSnapshot;
-import io.fluo.api.types.TypedSnapshot.Value;
 
 import com.google.common.collect.Sets;
 
@@ -73,7 +72,7 @@ public class PhraseCounterTest {
     props.setNumThreads(5);
     props.setObservers(Arrays.asList(new ObserverConfiguration(PhraseCounter.class.getName()), new ObserverConfiguration(HCCounter.class.getName())));
 
-    Admin.initialize(props);
+    FluoFactory.newAdmin(props).initialize(props);
 
     miniFluo = new MiniFluo(props);
     miniFluo.start();
@@ -108,9 +107,9 @@ public class PhraseCounterTest {
     }
   }
 
-  private PhraseInfo getPhraseInfo(SnapshotFactory snapFact, String phrase) throws Exception {
+  private PhraseInfo getPhraseInfo(FluoClient fluoClient, String phrase) throws Exception {
 
-    TypedSnapshot tsnap = TYPEL.snapshot(snapFact);
+    TypedSnapshot tsnap = TYPEL.snapshot(fluoClient);
     Map<Column,Value> map = tsnap.getd("phrase:" + phrase, Sets.newHashSet(STAT_SUM_COL, STAT_DOC_COUNT_COL));
 
     if (map.size() == 0)
@@ -136,59 +135,59 @@ public class PhraseCounterTest {
     lep.setNumThreads(0);
     lep.setQueueSize(0);
     
-    LoaderExecutor le = new LoaderExecutor(lep);
+    FluoClient fluoClient = FluoFactory.newClient(lep);
+
+    LoaderExecutor le = fluoClient.newLoaderExecutor();
 
     loadDocument(le, "/foo1", "This is only a test.  Do not panic. This is only a test.");
 
-    SnapshotFactory snapFact = new SnapshotFactory(props);
-
-    Assert.assertEquals(new PhraseInfo(2, 1), getPhraseInfo(snapFact, "is only a test"));
-    Assert.assertEquals(new PhraseInfo(1, 1), getPhraseInfo(snapFact, "test do not panic"));
+    Assert.assertEquals(new PhraseInfo(2, 1), getPhraseInfo(fluoClient, "is only a test"));
+    Assert.assertEquals(new PhraseInfo(1, 1), getPhraseInfo(fluoClient, "test do not panic"));
 
     // add new document w/ different content and overlapping phrase.. should change some counts
     loadDocument(le, "/foo2", "This is only a test");
 
-    Assert.assertEquals(new PhraseInfo(3, 2), getPhraseInfo(snapFact, "is only a test"));
-    Assert.assertEquals(new PhraseInfo(1, 1), getPhraseInfo(snapFact, "test do not panic"));
+    Assert.assertEquals(new PhraseInfo(3, 2), getPhraseInfo(fluoClient, "is only a test"));
+    Assert.assertEquals(new PhraseInfo(1, 1), getPhraseInfo(fluoClient, "test do not panic"));
 
     // add new document w/ same content, should not change any counts
     loadDocument(le, "/foo3", "This is only a test");
 
-    Assert.assertEquals(new PhraseInfo(3, 2), getPhraseInfo(snapFact, "is only a test"));
-    Assert.assertEquals(new PhraseInfo(1, 1), getPhraseInfo(snapFact, "test do not panic"));
+    Assert.assertEquals(new PhraseInfo(3, 2), getPhraseInfo(fluoClient, "is only a test"));
+    Assert.assertEquals(new PhraseInfo(1, 1), getPhraseInfo(fluoClient, "test do not panic"));
 
     // change the content of /foo1, should change counts
     loadDocument(le, "/foo1", "The test is over, for now.");
 
-    Assert.assertEquals(new PhraseInfo(1, 1), getPhraseInfo(snapFact, "the test is over"));
-    Assert.assertEquals(new PhraseInfo(1, 1), getPhraseInfo(snapFact, "is only a test"));
-    Assert.assertNull(getPhraseInfo(snapFact, "test do not panic"));
+    Assert.assertEquals(new PhraseInfo(1, 1), getPhraseInfo(fluoClient, "the test is over"));
+    Assert.assertEquals(new PhraseInfo(1, 1), getPhraseInfo(fluoClient, "is only a test"));
+    Assert.assertNull(getPhraseInfo(fluoClient, "test do not panic"));
 
     // change content of foo2, should not change anything
     loadDocument(le, "/foo2", "The test is over, for now.");
 
-    Assert.assertEquals(new PhraseInfo(1, 1), getPhraseInfo(snapFact, "the test is over"));
-    Assert.assertEquals(new PhraseInfo(1, 1), getPhraseInfo(snapFact, "is only a test"));
-    Assert.assertNull(getPhraseInfo(snapFact, "test do not panic"));
+    Assert.assertEquals(new PhraseInfo(1, 1), getPhraseInfo(fluoClient, "the test is over"));
+    Assert.assertEquals(new PhraseInfo(1, 1), getPhraseInfo(fluoClient, "is only a test"));
+    Assert.assertNull(getPhraseInfo(fluoClient, "test do not panic"));
 
     String oldHash = new Document("/foo3", "This is only a test").getHash();
-    TypedSnapshot tsnap = TYPEL.snapshot(snapFact);
+    TypedSnapshot tsnap = TYPEL.snapshot(fluoClient);
     Assert.assertNotNull(tsnap.get().row("doc:" + oldHash).col(DOC_CONTENT_COL).toString());
     Assert.assertEquals(1, tsnap.get().row("doc:" + oldHash).col(DOC_REF_COUNT_COL).toInteger(0));
 
     // dereference document that foo3 was referencing
     loadDocument(le, "/foo3", "The test is over, for now.");
 
-    Assert.assertEquals(new PhraseInfo(1, 1), getPhraseInfo(snapFact, "the test is over"));
-    Assert.assertNull(getPhraseInfo(snapFact, "is only a test"));
-    Assert.assertNull(getPhraseInfo(snapFact, "test do not panic"));
+    Assert.assertEquals(new PhraseInfo(1, 1), getPhraseInfo(fluoClient, "the test is over"));
+    Assert.assertNull(getPhraseInfo(fluoClient, "is only a test"));
+    Assert.assertNull(getPhraseInfo(fluoClient, "test do not panic"));
 
-    tsnap = TYPEL.snapshot(snapFact);
+    tsnap = TYPEL.snapshot(fluoClient);
     Assert.assertNull(tsnap.get().row("doc:" + oldHash).col(DOC_CONTENT_COL).toString());
     Assert.assertNull(tsnap.get().row("doc:" + oldHash).col(DOC_REF_COUNT_COL).toInteger());
 
     le.shutdown();
-    snapFact.close();
+    fluoClient.close();
 
   }
 
@@ -198,40 +197,40 @@ public class PhraseCounterTest {
     lep.setNumThreads(0);
     lep.setQueueSize(0);
 
-    LoaderExecutor le = new LoaderExecutor(lep);
+    FluoClient fluoClient = FluoFactory.newClient(lep);
+
+    LoaderExecutor le = fluoClient.newLoaderExecutor();
 
     Random rand = new Random();
 
     loadDocsWithRandomWords(le, rand, "This is only a test", 0, 100);
 
-    SnapshotFactory snapFact = new SnapshotFactory(props);
-
-    Assert.assertEquals(new PhraseInfo(100, 100), getPhraseInfo(snapFact, "this is only a"));
-    Assert.assertEquals(new PhraseInfo(100, 100), getPhraseInfo(snapFact, "is only a test"));
+    Assert.assertEquals(new PhraseInfo(100, 100), getPhraseInfo(fluoClient, "this is only a"));
+    Assert.assertEquals(new PhraseInfo(100, 100), getPhraseInfo(fluoClient, "is only a test"));
 
     loadDocsWithRandomWords(le, rand, "This is not a test", 0, 2);
 
-    Assert.assertEquals(new PhraseInfo(2, 2), getPhraseInfo(snapFact, "this is not a"));
-    Assert.assertEquals(new PhraseInfo(2, 2), getPhraseInfo(snapFact, "is not a test"));
-    Assert.assertEquals(new PhraseInfo(98, 98), getPhraseInfo(snapFact, "this is only a"));
-    Assert.assertEquals(new PhraseInfo(98, 98), getPhraseInfo(snapFact, "is only a test"));
+    Assert.assertEquals(new PhraseInfo(2, 2), getPhraseInfo(fluoClient, "this is not a"));
+    Assert.assertEquals(new PhraseInfo(2, 2), getPhraseInfo(fluoClient, "is not a test"));
+    Assert.assertEquals(new PhraseInfo(98, 98), getPhraseInfo(fluoClient, "this is only a"));
+    Assert.assertEquals(new PhraseInfo(98, 98), getPhraseInfo(fluoClient, "is only a test"));
 
     loadDocsWithRandomWords(le, rand, "This is not a test", 2, 100);
 
-    Assert.assertEquals(new PhraseInfo(100, 100), getPhraseInfo(snapFact, "this is not a"));
-    Assert.assertEquals(new PhraseInfo(100, 100), getPhraseInfo(snapFact, "is not a test"));
-    Assert.assertEquals(new PhraseInfo(0, 0), getPhraseInfo(snapFact, "this is only a"));
-    Assert.assertEquals(new PhraseInfo(0, 0), getPhraseInfo(snapFact, "is only a test"));
+    Assert.assertEquals(new PhraseInfo(100, 100), getPhraseInfo(fluoClient, "this is not a"));
+    Assert.assertEquals(new PhraseInfo(100, 100), getPhraseInfo(fluoClient, "is not a test"));
+    Assert.assertEquals(new PhraseInfo(0, 0), getPhraseInfo(fluoClient, "this is only a"));
+    Assert.assertEquals(new PhraseInfo(0, 0), getPhraseInfo(fluoClient, "is only a test"));
 
     loadDocsWithRandomWords(le, rand, "This is only a test", 0, 50);
 
-    Assert.assertEquals(new PhraseInfo(50, 50), getPhraseInfo(snapFact, "this is not a"));
-    Assert.assertEquals(new PhraseInfo(50, 50), getPhraseInfo(snapFact, "is not a test"));
-    Assert.assertEquals(new PhraseInfo(50, 50), getPhraseInfo(snapFact, "this is only a"));
-    Assert.assertEquals(new PhraseInfo(50, 50), getPhraseInfo(snapFact, "is only a test"));
+    Assert.assertEquals(new PhraseInfo(50, 50), getPhraseInfo(fluoClient, "this is not a"));
+    Assert.assertEquals(new PhraseInfo(50, 50), getPhraseInfo(fluoClient, "is not a test"));
+    Assert.assertEquals(new PhraseInfo(50, 50), getPhraseInfo(fluoClient, "this is only a"));
+    Assert.assertEquals(new PhraseInfo(50, 50), getPhraseInfo(fluoClient, "is only a test"));
 
     le.shutdown();
-    snapFact.close();
+    fluoClient.close();
   }
 
   void loadDocsWithRandomWords(LoaderExecutor le, Random rand, String phrase, int start, int end) {

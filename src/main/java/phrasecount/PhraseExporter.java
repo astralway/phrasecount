@@ -7,10 +7,10 @@ import static phrasecount.Constants.EXPORT_SUM_COL;
 import static phrasecount.Constants.STAT_DOC_COUNT_COL;
 import static phrasecount.Constants.STAT_SUM_COL;
 import static phrasecount.Constants.TYPEL;
-import io.fluo.api.AbstractObserver;
-import io.fluo.api.Bytes;
-import io.fluo.api.Column;
-import io.fluo.api.Transaction;
+import io.fluo.api.client.Transaction;
+import io.fluo.api.data.Bytes;
+import io.fluo.api.data.Column;
+import io.fluo.api.observer.AbstractObserver;
 import io.fluo.api.types.TypedSnapshot.Value;
 import io.fluo.api.types.TypedTransaction;
 

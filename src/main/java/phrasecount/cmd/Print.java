@@ -1,19 +1,19 @@
 package phrasecount.cmd;
 
-import io.fluo.api.Bytes;
-import io.fluo.api.Column;
-import io.fluo.api.ColumnIterator;
-import io.fluo.api.RowIterator;
-import io.fluo.api.ScannerConfiguration;
-import io.fluo.api.Snapshot;
-import io.fluo.api.SnapshotFactory;
+import io.fluo.api.client.FluoClient;
+import io.fluo.api.client.FluoFactory;
+import io.fluo.api.client.Snapshot;
 import io.fluo.api.config.ConnectionProperties;
+import io.fluo.api.config.ScannerConfiguration;
+import io.fluo.api.data.Bytes;
+import io.fluo.api.data.Column;
+import io.fluo.api.data.Span;
+import io.fluo.api.iterator.ColumnIterator;
+import io.fluo.api.iterator.RowIterator;
 
 import java.io.File;
 import java.util.Iterator;
 import java.util.Map.Entry;
-
-import org.apache.accumulo.core.data.Range;
 
 import phrasecount.Constants;
 
@@ -75,9 +75,8 @@ public class Print {
       System.exit(-1);
     }
 
-    SnapshotFactory snapFact = new SnapshotFactory(new ConnectionProperties(new File(args[0])));
-    Snapshot snap = snapFact.createSnapshot();
-    try {
+    try (FluoClient fluoClient = FluoFactory.newClient(new ConnectionProperties(new File(args[0])))) {
+      Snapshot snap = fluoClient.newSnapshot();
       Iterator<PhraseCount> phraseIter = createPhraseIterator(snap);
 
       while (phraseIter.hasNext()) {
@@ -97,8 +96,6 @@ public class Print {
       System.out.println();
 
 
-    } finally {
-      snapFact.close();
     }
 
     // TODO figure what threads are hanging around
@@ -107,7 +104,7 @@ public class Print {
 
   private static int count(Snapshot snap, String prefix, Column col) throws Exception {
     ScannerConfiguration scanConfig = new ScannerConfiguration();
-    scanConfig.setRange(Range.prefix(prefix));
+    scanConfig.setSpan(Span.exact(prefix));
     scanConfig.fetchColumn(col.getFamily(), col.getQualifier());
 
     int count = 0;
@@ -124,7 +121,7 @@ public class Print {
 
   static Iterator<PhraseCount> createPhraseIterator(Snapshot snap) throws Exception {
     ScannerConfiguration scanConfig = new ScannerConfiguration();
-    scanConfig.setRange(Range.prefix("phrase:"));
+    scanConfig.setSpan(Span.prefix("phrase:"));
     scanConfig.fetchColumn(Constants.STAT_SUM_COL.getFamily(), Constants.STAT_SUM_COL.getQualifier());
     scanConfig.fetchColumn(Constants.STAT_DOC_COUNT_COL.getFamily(), Constants.STAT_DOC_COUNT_COL.getQualifier());
 
