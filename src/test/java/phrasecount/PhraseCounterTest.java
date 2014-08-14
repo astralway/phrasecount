@@ -8,13 +8,13 @@ import static phrasecount.Constants.TYPEL;
 import io.fluo.api.client.FluoClient;
 import io.fluo.api.client.FluoFactory;
 import io.fluo.api.client.LoaderExecutor;
+import io.fluo.api.client.MiniFluo;
 import io.fluo.api.config.InitializationProperties;
 import io.fluo.api.config.LoaderExecutorProperties;
 import io.fluo.api.config.ObserverConfiguration;
 import io.fluo.api.data.Column;
 import io.fluo.api.types.TypedSnapshot;
 import io.fluo.api.types.TypedSnapshot.Value;
-import io.fluo.core.impl.MiniFluo;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -74,7 +74,7 @@ public class PhraseCounterTest {
 
     FluoFactory.newAdmin(props).initialize(props);
 
-    miniFluo = new MiniFluo(props);
+    miniFluo = FluoFactory.newMiniFluo(props);
     miniFluo.start();
   }
 

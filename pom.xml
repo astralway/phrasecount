@@ -51,6 +51,7 @@
       <groupId>io.fluo</groupId>
       <artifactId>fluo-core</artifactId>
       <version>1.0.0-alpha-1-SNAPSHOT</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
     	<groupId>org.apache.accumulo</groupId>
