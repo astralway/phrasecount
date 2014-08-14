@@ -186,7 +186,7 @@ public class PhraseCounterTest {
     Assert.assertNull(tsnap.get().row("doc:" + oldHash).col(DOC_CONTENT_COL).toString());
     Assert.assertNull(tsnap.get().row("doc:" + oldHash).col(DOC_REF_COUNT_COL).toInteger());
 
-    le.shutdown();
+    le.close();
     fluoClient.close();
 
   }
@@ -229,7 +229,7 @@ public class PhraseCounterTest {
     Assert.assertEquals(new PhraseInfo(50, 50), getPhraseInfo(fluoClient, "this is only a"));
     Assert.assertEquals(new PhraseInfo(50, 50), getPhraseInfo(fluoClient, "is only a test"));
 
-    le.shutdown();
+    le.close();
     fluoClient.close();
   }
 

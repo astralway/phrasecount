@@ -82,6 +82,8 @@ public class Compare {
       PeekingIterator<PhraseCount> fluoIter = Iterators.peekingIterator(Print.createPhraseIterator(snap));
       PeekingIterator<PhraseCount> accumuloIter = Iterators.peekingIterator(createPhraseIterator(props, args[2]));
 
+      int sameCount = 0;
+
       while (accumuloIter.hasNext() && fluoIter.hasNext()) {
         PhraseCount accumuloPhrase = accumuloIter.peek();
         PhraseCount fluoPhrase = fluoIter.peek();
@@ -89,6 +91,7 @@ public class Compare {
         if (fluoPhrase.equals(accumuloPhrase)) {
           fluoIter.next();
           accumuloIter.next();
+          sameCount++;
           continue;
         }
 
@@ -118,6 +121,9 @@ public class Compare {
         PhraseCount fluoPhrase = fluoIter.next();
         System.out.printf("Only in Fluo : %7d %7d '%s'\n", fluoPhrase.docCount, fluoPhrase.sum, fluoPhrase.phrase);
       }
+
+      System.out.println();
+      System.out.println("same count : " + sameCount);
     }
     // TODO figure what threads are hanging around
     System.exit(0);

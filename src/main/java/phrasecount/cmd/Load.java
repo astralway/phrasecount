@@ -24,11 +24,8 @@ public class Load {
     LoaderExecutorProperties leprops = new LoaderExecutorProperties(new File(args[0]));
     leprops.setNumThreads(20);
     leprops.setQueueSize(40);
-    
-    LoaderExecutor le = null;
 
-    try (FluoClient fluoClient = FluoFactory.newClient(leprops)) {
-      le = fluoClient.newLoaderExecutor();
+    try (FluoClient fluoClient = FluoFactory.newClient(leprops); LoaderExecutor le = fluoClient.newLoaderExecutor()) {
       for (File txtFile : FileUtils.listFiles(new File(args[1]), new String[] {"txt"}, true)) {
         String uri = txtFile.toURI().toString();
         String content = FileUtils.readFileToString(txtFile);
@@ -36,9 +33,6 @@ public class Load {
         System.out.println("Processing : " + txtFile.toURI());
         le.execute(new DocumentLoader(new Document(uri, content)));
       }
-    } finally {
-      if (le != null)
-        le.shutdown();
     }
 
     // TODO figure what threads are hanging around
