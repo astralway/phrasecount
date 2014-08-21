@@ -2,14 +2,10 @@ package phrasecount.cmd;
 
 import io.fluo.api.client.FluoFactory;
 import io.fluo.api.client.MiniFluo;
-import io.fluo.api.config.ConnectionProperties;
-import io.fluo.api.config.InitializationProperties;
+import io.fluo.api.config.FluoConfiguration;
 import io.fluo.api.config.ObserverConfiguration;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +17,7 @@ import org.apache.accumulo.minicluster.MemoryUnit;
 import org.apache.accumulo.minicluster.MiniAccumuloCluster;
 import org.apache.accumulo.minicluster.MiniAccumuloConfig;
 import org.apache.accumulo.minicluster.ServerType;
+import org.apache.commons.configuration.PropertiesConfiguration;
 
 import phrasecount.HCCounter;
 import phrasecount.PhraseCounter;
@@ -80,16 +77,19 @@ public class Mini {
     MiniAccumuloCluster cluster = new MiniAccumuloCluster(cfg);
     cluster.start();
 
-    ConnectionProperties aprops = new ConnectionProperties();
-    aprops.setAccumuloInstance(cluster.getInstanceName());
-    aprops.setAccumuloUser("root");
-    aprops.setAccumuloPassword("secret");
-    aprops.setZookeeperRoot("/fluo");
-    aprops.setZookeepers(cluster.getZooKeepers());
+    FluoConfiguration fluoConfig = new FluoConfiguration();
+    fluoConfig.setAccumuloInstance(cluster.getInstanceName());
+    fluoConfig.setAccumuloUser("root");
+    fluoConfig.setAccumuloPassword("secret");
+    fluoConfig.setZookeeperRoot("/fluo");
+    fluoConfig.setZookeepers(cluster.getZooKeepers());
 
-    InitializationProperties props = new InitializationProperties(aprops);
-    props.setAccumuloTable("data");
-    props.setNumThreads(params.workerThreads);
+    // copy just the props needed to connect to fluo to save later
+    PropertiesConfiguration propsConfig = new PropertiesConfiguration();
+    propsConfig.copy(fluoConfig);
+
+    fluoConfig.setAccumuloTable("data");
+    fluoConfig.setWorkerThreads(params.workerThreads);
 
     List<ObserverConfiguration> observers = new ArrayList<ObserverConfiguration>();
     observers.add(new ObserverConfiguration(PhraseCounter.class.getName()));
@@ -98,16 +98,14 @@ public class Mini {
     observers.add(new ObserverConfiguration(PhraseExporter.class.getName()).setParameters(exportConfig));
 
     observers.add(new ObserverConfiguration(HCCounter.class.getName()));
-    props.setObservers(observers);
+    fluoConfig.setObservers(observers);
 
-    FluoFactory.newAdmin(props).initialize(props);
+    FluoFactory.newAdmin(fluoConfig).initialize();
 
-    MiniFluo miniFluo = FluoFactory.newMiniFluo(props);
+    MiniFluo miniFluo = FluoFactory.newMiniFluo(fluoConfig);
     miniFluo.start();
 
-    Writer fw = new BufferedWriter(new FileWriter(new File(params.args.get(1))));
-    aprops.store(fw, null);
-    fw.close();
+    propsConfig.save(params.args.get(1));
 
     System.out.println();
     System.out.println("Wrote : " + params.args.get(1));

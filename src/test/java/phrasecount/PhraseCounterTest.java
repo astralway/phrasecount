@@ -9,8 +9,7 @@ import io.fluo.api.client.FluoClient;
 import io.fluo.api.client.FluoFactory;
 import io.fluo.api.client.LoaderExecutor;
 import io.fluo.api.client.MiniFluo;
-import io.fluo.api.config.InitializationProperties;
-import io.fluo.api.config.LoaderExecutorProperties;
+import io.fluo.api.config.FluoConfiguration;
 import io.fluo.api.config.ObserverConfiguration;
 import io.fluo.api.data.Column;
 import io.fluo.api.types.TypedSnapshot;
@@ -39,7 +38,7 @@ import com.google.common.collect.Sets;
 public class PhraseCounterTest {
   public static TemporaryFolder folder = new TemporaryFolder();
   public static MiniAccumuloCluster cluster;
-  private static InitializationProperties props;
+  private static FluoConfiguration props;
   private static MiniFluo miniFluo;
   private static final PasswordToken password = new PasswordToken("secret");
   private static AtomicInteger tableCounter = new AtomicInteger(1);
@@ -61,7 +60,7 @@ public class PhraseCounterTest {
   @Before
   public void setUpFluo() throws Exception {
     // TODO add helper code to make this shorter
-    props = new InitializationProperties();
+    props = new FluoConfiguration();
     props.setAccumuloInstance(cluster.getInstanceName());
     props.setAccumuloUser("root");
     props.setAccumuloPassword("secret");
@@ -69,10 +68,10 @@ public class PhraseCounterTest {
     props.setZookeepers(cluster.getZooKeepers());
     props.setClearZookeeper(true);
     props.setAccumuloTable("data" + tableCounter.getAndIncrement());
-    props.setNumThreads(5);
+    props.setWorkerThreads(5);
     props.setObservers(Arrays.asList(new ObserverConfiguration(PhraseCounter.class.getName()), new ObserverConfiguration(HCCounter.class.getName())));
 
-    FluoFactory.newAdmin(props).initialize(props);
+    FluoFactory.newAdmin(props).initialize();
 
     miniFluo = FluoFactory.newMiniFluo(props);
     miniFluo.start();
@@ -131,9 +130,9 @@ public class PhraseCounterTest {
   @Test
   public void test1() throws Exception {
 
-    LoaderExecutorProperties lep = new LoaderExecutorProperties(props);
-    lep.setNumThreads(0);
-    lep.setQueueSize(0);
+    FluoConfiguration lep = new FluoConfiguration(props);
+    lep.setLoaderThreads(0);
+    lep.setLoaderQueueSize(0);
     
     FluoClient fluoClient = FluoFactory.newClient(lep);
 
@@ -193,9 +192,9 @@ public class PhraseCounterTest {
 
   @Test
   public void testHighCardinality() throws Exception {
-    LoaderExecutorProperties lep = new LoaderExecutorProperties(props);
-    lep.setNumThreads(0);
-    lep.setQueueSize(0);
+    FluoConfiguration lep = new FluoConfiguration(props);
+    lep.setLoaderThreads(0);
+    lep.setLoaderQueueSize(0);
 
     FluoClient fluoClient = FluoFactory.newClient(lep);
 

@@ -61,8 +61,7 @@ Building
 
 After cloning this repo, build with following command.  May need to install
 Fluo into your local maven repo first.  Fluo is rapidly chaning, if
-this project does not compile after git pull you may need to pull and install
-Fluo again.
+this project does not compile try using Fluo commit cb78388.
 
 ```
 mvn package 

@@ -3,7 +3,7 @@ package phrasecount.cmd;
 import io.fluo.api.client.FluoClient;
 import io.fluo.api.client.FluoFactory;
 import io.fluo.api.client.LoaderExecutor;
-import io.fluo.api.config.LoaderExecutorProperties;
+import io.fluo.api.config.FluoConfiguration;
 
 import java.io.File;
 
@@ -21,9 +21,9 @@ public class Load {
       System.exit(-1);
     }
     
-    LoaderExecutorProperties leprops = new LoaderExecutorProperties(new File(args[0]));
-    leprops.setNumThreads(20);
-    leprops.setQueueSize(40);
+    FluoConfiguration leprops = new FluoConfiguration(new File(args[0]));
+    leprops.setLoaderThreads(20);
+    leprops.setLoaderQueueSize(40);
 
     try (FluoClient fluoClient = FluoFactory.newClient(leprops); LoaderExecutor le = fluoClient.newLoaderExecutor()) {
       for (File txtFile : FileUtils.listFiles(new File(args[1]), new String[] {"txt"}, true)) {

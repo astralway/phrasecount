@@ -3,7 +3,7 @@ package phrasecount.cmd;
 import io.fluo.api.client.FluoClient;
 import io.fluo.api.client.FluoFactory;
 import io.fluo.api.client.Snapshot;
-import io.fluo.api.config.ConnectionProperties;
+import io.fluo.api.config.FluoConfiguration;
 import io.fluo.api.config.ScannerConfiguration;
 import io.fluo.api.data.Bytes;
 import io.fluo.api.data.Column;
@@ -75,7 +75,7 @@ public class Print {
       System.exit(-1);
     }
 
-    try (FluoClient fluoClient = FluoFactory.newClient(new ConnectionProperties(new File(args[0])))) {
+    try (FluoClient fluoClient = FluoFactory.newClient(new FluoConfiguration(new File(args[0])))) {
       Snapshot snap = fluoClient.newSnapshot();
       Iterator<PhraseCount> phraseIter = createPhraseIterator(snap);
 

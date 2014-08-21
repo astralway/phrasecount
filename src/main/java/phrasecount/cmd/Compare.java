@@ -1,20 +1,15 @@
 package phrasecount.cmd;
 
-import static io.fluo.api.config.ConnectionProperties.ACCUMULO_INSTANCE_PROP;
-import static io.fluo.api.config.ConnectionProperties.ACCUMULO_PASSWORD_PROP;
-import static io.fluo.api.config.ConnectionProperties.ACCUMULO_USER_PROP;
-import static io.fluo.api.config.ConnectionProperties.ZOOKEEPER_CONNECT_PROP;
 import io.fluo.api.client.FluoClient;
 import io.fluo.api.client.FluoFactory;
 import io.fluo.api.client.Snapshot;
-import io.fluo.api.config.ConnectionProperties;
+import io.fluo.api.config.FluoConfiguration;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map.Entry;
-import java.util.Properties;
 
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
@@ -74,7 +69,7 @@ public class Compare {
       System.exit(-1);
     }
 
-    Properties props = new ConnectionProperties(new File(args[0]));
+    FluoConfiguration props = new FluoConfiguration(new File(args[0]));
 
     try (FluoClient fluoClient = FluoFactory.newClient(props)) {
       Snapshot snap = fluoClient.newSnapshot();
@@ -129,11 +124,12 @@ public class Compare {
     System.exit(0);
   }
 
-  static Iterator<PhraseCount> createPhraseIterator(Properties props, String table) throws FileNotFoundException, IOException, AccumuloException,
+  static Iterator<PhraseCount> createPhraseIterator(FluoConfiguration fluoConfig, String table) throws FileNotFoundException, IOException,
+      AccumuloException,
       AccumuloSecurityException, TableNotFoundException {
 
-    ZooKeeperInstance zki = new ZooKeeperInstance(props.getProperty(ACCUMULO_INSTANCE_PROP), props.getProperty(ZOOKEEPER_CONNECT_PROP));
-    Connector conn = zki.getConnector(props.getProperty(ACCUMULO_USER_PROP), new PasswordToken(props.getProperty(ACCUMULO_PASSWORD_PROP)));
+    ZooKeeperInstance zki = new ZooKeeperInstance(fluoConfig.getAccumuloInstance(), fluoConfig.getZookeepers());
+    Connector conn = zki.getConnector(fluoConfig.getAccumuloUser(), new PasswordToken(fluoConfig.getAccumuloPassword()));
 
     Scanner scanner = conn.createScanner(table, Authorizations.EMPTY);
     scanner.fetchColumn(new Text("stat"), new Text("sum"));
