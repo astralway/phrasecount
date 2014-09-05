@@ -27,7 +27,7 @@ public class DocumentLoader implements Loader {
     // TODO need a strategy for dealing w/ large documents. If a worker processes many large documents concurrently it could cause memory exhaustion. . Could
     // large documents up into pieces, however not sure if the example should be complicated w/ this.
 
-    TypedTransaction ttx = TYPEL.transaction(tx);
+    TypedTransaction ttx = TYPEL.wrap(tx);
     String storedHash = ttx.get().row("uri:" + document.getURI()).col(DOC_HASH_COL).toString();
 
     if (storedHash == null || !storedHash.equals(document.getHash())) {

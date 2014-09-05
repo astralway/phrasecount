@@ -108,8 +108,9 @@ public class PhraseCounterTest {
 
   private PhraseInfo getPhraseInfo(FluoClient fluoClient, String phrase) throws Exception {
 
-    TypedSnapshot tsnap = TYPEL.snapshot(fluoClient);
-    Map<Column,Value> map = tsnap.getd("phrase:" + phrase, Sets.newHashSet(STAT_SUM_COL, STAT_DOC_COUNT_COL));
+    TypedSnapshot tsnap = TYPEL.wrap(fluoClient.newSnapshot());
+
+    Map<Column,Value> map = tsnap.get().row("phrase:" + phrase).columns(Sets.newHashSet(STAT_SUM_COL, STAT_DOC_COUNT_COL));
 
     if (map.size() == 0)
       return null;
@@ -170,7 +171,7 @@ public class PhraseCounterTest {
     Assert.assertNull(getPhraseInfo(fluoClient, "test do not panic"));
 
     String oldHash = new Document("/foo3", "This is only a test").getHash();
-    TypedSnapshot tsnap = TYPEL.snapshot(fluoClient);
+    TypedSnapshot tsnap = TYPEL.wrap(fluoClient.newSnapshot());
     Assert.assertNotNull(tsnap.get().row("doc:" + oldHash).col(DOC_CONTENT_COL).toString());
     Assert.assertEquals(1, tsnap.get().row("doc:" + oldHash).col(DOC_REF_COUNT_COL).toInteger(0));
 
@@ -181,7 +182,7 @@ public class PhraseCounterTest {
     Assert.assertNull(getPhraseInfo(fluoClient, "is only a test"));
     Assert.assertNull(getPhraseInfo(fluoClient, "test do not panic"));
 
-    tsnap = TYPEL.snapshot(fluoClient);
+    tsnap = TYPEL.wrap(fluoClient.newSnapshot());
     Assert.assertNull(tsnap.get().row("doc:" + oldHash).col(DOC_CONTENT_COL).toString());
     Assert.assertNull(tsnap.get().row("doc:" + oldHash).col(DOC_REF_COUNT_COL).toInteger());
 

@@ -24,7 +24,7 @@ public class HCCounter extends AbstractObserver {
 
   @Override
   public void process(Transaction tx, Bytes row, Column col) throws Exception {
-    TypedTransaction ttx = TYPEL.transaction(tx);
+    TypedTransaction ttx = TYPEL.wrap(tx);
 
     ScannerConfiguration scanConfig = new ScannerConfiguration();
     scanConfig.setSpan(Span.prefix(row.toString(), "stat", "sum:"));

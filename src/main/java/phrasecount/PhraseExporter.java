@@ -76,9 +76,10 @@ public class PhraseExporter extends AbstractObserver {
   // TODO this needs test
   @Override
   public void process(Transaction tx, Bytes row, Column col) throws Exception {
-    TypedTransaction ttx = TYPEL.transaction(tx);
+    TypedTransaction ttx = TYPEL.wrap(tx);
     
-    Map<Column,Value> columns = ttx.getd(row, Sets.newHashSet(STAT_SUM_COL, STAT_DOC_COUNT_COL, EXPORT_SUM_COL, EXPORT_DOC_COUNT_COL, EXPORT_SEQ_COL));
+    Map<Column,Value> columns = ttx.get().row(row)
+        .columns(Sets.newHashSet(STAT_SUM_COL, STAT_DOC_COUNT_COL, EXPORT_SUM_COL, EXPORT_DOC_COUNT_COL, EXPORT_SEQ_COL));
     
     Integer currentSum = columns.get(STAT_SUM_COL).toInteger();
     Integer currentDocCount = columns.get(STAT_DOC_COUNT_COL).toInteger();

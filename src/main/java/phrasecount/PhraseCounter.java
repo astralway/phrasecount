@@ -27,8 +27,6 @@ import java.util.Random;
 import org.apache.commons.math.stat.descriptive.moment.Mean;
 import org.apache.commons.math.stat.descriptive.moment.StandardDeviation;
 
-import com.google.common.collect.Sets;
-
 /**
  * An Observer that updates phrase counts when a document is added or removed.  In needed, the observer that exports phrase counts is triggered.
  */
@@ -42,7 +40,7 @@ public class PhraseCounter extends AbstractObserver {
   @Override
   public void process(Transaction tx, Bytes row, Column col) throws Exception {
 
-    TypedTransaction ttx = TYPEL.transaction(tx);
+    TypedTransaction ttx = TYPEL.wrap(tx);
 
     IndexStatus status = getStatus(ttx, row);
     int refCount = ttx.get().row(row).col(DOC_REF_COUNT_COL).toInteger();
@@ -113,7 +111,8 @@ public class PhraseCounter extends AbstractObserver {
       rows.add(phraseRow);
     }
 
-    Map<String,Map<Column,Value>> storedPhrases = ttx.getd(rows, Sets.newHashSet(STAT_SUM_COL, STAT_DOC_COUNT_COL, EXPORT_SUM_COL, EXPORT_DOC_COUNT_COL));
+    Map<String,Map<Column,Value>> storedPhrases = ttx.get().rowsString(rows).columns(STAT_SUM_COL, STAT_DOC_COUNT_COL, EXPORT_SUM_COL, EXPORT_DOC_COUNT_COL)
+        .toStringMap();
 
     double cutOff = computeHighCardinalityCutoff(phrases, storedPhrases, multiplier);
 
@@ -165,11 +164,11 @@ public class PhraseCounter extends AbstractObserver {
       return;
 
     int randCol = new Random().nextInt(Integer.MAX_VALUE);
-    Column randSumCol = TYPEL.newColumn("stat", String.format("sum:%x", randCol));
-    Column randDocCol = TYPEL.newColumn("stat", String.format("docCount:%x", randCol));
+    Column randSumCol = TYPEL.bc().fam("stat").qual(String.format("sum:%x", randCol)).vis();
+    Column randDocCol = TYPEL.bc().fam("stat").qual(String.format("docCount:%x", randCol)).vis();
 
     // its very likely that these do not exist, but must check just in case
-    Map<String,Map<Column,Value>> storedPhrases = ttx.getd(highCardinalityPhrases.keySet(), Sets.newHashSet(randSumCol, randDocCol));
+    Map<String,Map<Column,Value>> storedPhrases = ttx.get().rowsString(highCardinalityPhrases.keySet()).columns(randSumCol, randDocCol).toStringMap();
 
     for (Entry<String,Integer> entry : highCardinalityPhrases.entrySet()) {
       String phraseRow = entry.getKey();
