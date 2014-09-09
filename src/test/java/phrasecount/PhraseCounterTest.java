@@ -31,8 +31,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import com.google.common.collect.Sets;
-
 //TODO make this an integration test
 
 public class PhraseCounterTest {
@@ -110,7 +108,7 @@ public class PhraseCounterTest {
 
     TypedSnapshot tsnap = TYPEL.wrap(fluoClient.newSnapshot());
 
-    Map<Column,Value> map = tsnap.get().row("phrase:" + phrase).columns(Sets.newHashSet(STAT_SUM_COL, STAT_DOC_COUNT_COL));
+    Map<Column,Value> map = tsnap.get().row("phrase:" + phrase).columns(STAT_SUM_COL, STAT_DOC_COUNT_COL);
 
     if (map.size() == 0)
       return null;

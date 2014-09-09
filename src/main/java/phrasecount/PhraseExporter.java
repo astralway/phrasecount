@@ -20,8 +20,6 @@ import phrasecount.export.AccumuloExporter;
 import phrasecount.export.Exporter;
 import phrasecount.export.FileExporter;
 
-import com.google.common.collect.Sets;
-
 /**
  * PhraseExporter exports phrase counts to an external source. The following problems must be considered when exporting data.
  * 
@@ -78,8 +76,7 @@ public class PhraseExporter extends AbstractObserver {
   public void process(Transaction tx, Bytes row, Column col) throws Exception {
     TypedTransaction ttx = TYPEL.wrap(tx);
     
-    Map<Column,Value> columns = ttx.get().row(row)
-        .columns(Sets.newHashSet(STAT_SUM_COL, STAT_DOC_COUNT_COL, EXPORT_SUM_COL, EXPORT_DOC_COUNT_COL, EXPORT_SEQ_COL));
+    Map<Column,Value> columns = ttx.get().row(row).columns(STAT_SUM_COL, STAT_DOC_COUNT_COL, EXPORT_SUM_COL, EXPORT_DOC_COUNT_COL, EXPORT_SEQ_COL);
     
     Integer currentSum = columns.get(STAT_SUM_COL).toInteger();
     Integer currentDocCount = columns.get(STAT_DOC_COUNT_COL).toInteger();
