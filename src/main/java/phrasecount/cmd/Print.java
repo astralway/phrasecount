@@ -104,7 +104,7 @@ public class Print {
 
   private static int count(Snapshot snap, String prefix, Column col) throws Exception {
     ScannerConfiguration scanConfig = new ScannerConfiguration();
-    scanConfig.setSpan(Span.exact(prefix));
+    scanConfig.setSpan(Span.prefix(prefix));
     scanConfig.fetchColumn(col.getFamily(), col.getQualifier());
 
     int count = 0;
