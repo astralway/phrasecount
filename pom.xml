@@ -57,13 +57,11 @@
       <groupId>org.apache.accumulo</groupId>
       <artifactId>accumulo-minicluster</artifactId>
       <version>${accumulo.version}</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.accumulo</groupId>
       <artifactId>accumulo-core</artifactId>
       <version>${accumulo.version}</version>
-      <scope>runtime</scope>
     </dependency>
   </dependencies>
 

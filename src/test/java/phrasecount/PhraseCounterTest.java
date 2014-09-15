@@ -13,7 +13,7 @@ import io.fluo.api.config.FluoConfiguration;
 import io.fluo.api.config.ObserverConfiguration;
 import io.fluo.api.data.Column;
 import io.fluo.api.types.TypedSnapshot;
-import io.fluo.api.types.TypedSnapshot.Value;
+import io.fluo.api.types.TypedSnapshotBase.Value;
 
 import java.util.Arrays;
 import java.util.Map;

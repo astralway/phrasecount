@@ -11,7 +11,7 @@ import io.fluo.api.client.Transaction;
 import io.fluo.api.data.Bytes;
 import io.fluo.api.data.Column;
 import io.fluo.api.observer.AbstractObserver;
-import io.fluo.api.types.TypedSnapshot.Value;
+import io.fluo.api.types.TypedSnapshotBase.Value;
 import io.fluo.api.types.TypedTransaction;
 
 import java.util.Map;
