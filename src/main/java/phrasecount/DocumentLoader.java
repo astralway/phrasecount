@@ -5,9 +5,11 @@ import static phrasecount.Constants.DOC_HASH_COL;
 import static phrasecount.Constants.DOC_REF_COUNT_COL;
 import static phrasecount.Constants.INDEX_CHECK_COL;
 import static phrasecount.Constants.TYPEL;
+
+import io.fluo.api.types.TypedTransactionBase;
+
+import io.fluo.api.client.TransactionBase;
 import io.fluo.api.client.Loader;
-import io.fluo.api.client.Transaction;
-import io.fluo.api.types.TypedTransaction;
 
 /**
  * Executes document load transactions which dedupe and reference count documents.  IF needed, the observer that updates phrase counts is triggered.
@@ -22,12 +24,12 @@ public class DocumentLoader implements Loader {
   }
   
   @Override
-  public void load(Transaction tx) throws Exception {
+  public void load(TransactionBase tx) throws Exception {
 
     // TODO need a strategy for dealing w/ large documents. If a worker processes many large documents concurrently it could cause memory exhaustion. . Could
     // large documents up into pieces, however not sure if the example should be complicated w/ this.
 
-    TypedTransaction ttx = TYPEL.wrap(tx);
+    TypedTransactionBase ttx = TYPEL.wrap(tx);
     String storedHash = ttx.get().row("uri:" + document.getURI()).col(DOC_HASH_COL).toString();
 
     if (storedHash == null || !storedHash.equals(document.getHash())) {
@@ -47,7 +49,7 @@ public class DocumentLoader implements Loader {
     }
   }
 
-  private void setRefCount(TypedTransaction tx, String hash, int rc) {
+  private void setRefCount(TypedTransactionBase tx, String hash, int rc) {
     tx.mutate().row("doc:" + hash).col(DOC_REF_COUNT_COL).set(rc);
     // TODO want to trigger checking for indexing in all cases when the ref count transitions to 0 or 1, except when it transitions from 2 to 1.... the
     // following transitions should trigger a check for indexing
@@ -58,12 +60,12 @@ public class DocumentLoader implements Loader {
       tx.mutate().row("doc:" + hash).col(INDEX_CHECK_COL).set(); // setting this triggers the phrase counting observer
   }
 
-  private void decrementRefCount(TypedTransaction tx, String hash) throws Exception {
+  private void decrementRefCount(TypedTransactionBase tx, String hash) throws Exception {
     int rc = tx.get().row("doc:" + hash).col(DOC_REF_COUNT_COL).toInteger();
     setRefCount(tx, hash, rc - 1);
   }
 
-  private void addNewDocument(TypedTransaction tx, Document doc) {
+  private void addNewDocument(TypedTransactionBase tx, Document doc) {
     setRefCount(tx, doc.getHash(), 1);
     tx.mutate().row("doc:" + doc.getHash()).col(DOC_CONTENT_COL).set(doc.getContent());
   }

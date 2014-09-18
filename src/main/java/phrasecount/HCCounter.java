@@ -4,7 +4,6 @@ import static phrasecount.Constants.EXPORT_DOC_COUNT_COL;
 import static phrasecount.Constants.EXPORT_SUM_COL;
 import static phrasecount.Constants.STAT_CHECK_COL;
 import static phrasecount.Constants.TYPEL;
-import io.fluo.api.client.Transaction;
 import io.fluo.api.config.ScannerConfiguration;
 import io.fluo.api.data.Bytes;
 import io.fluo.api.data.Column;
@@ -12,9 +11,12 @@ import io.fluo.api.data.Span;
 import io.fluo.api.iterator.ColumnIterator;
 import io.fluo.api.iterator.RowIterator;
 import io.fluo.api.observer.AbstractObserver;
-import io.fluo.api.types.TypedTransaction;
 
 import java.util.Map.Entry;
+
+import io.fluo.api.types.TypedTransactionBase;
+
+import io.fluo.api.client.TransactionBase;
 
 /**
  * This Observer processes high cardinality phrases. It sums up all of the random stat columns that were set.
@@ -23,8 +25,8 @@ import java.util.Map.Entry;
 public class HCCounter extends AbstractObserver {
 
   @Override
-  public void process(Transaction tx, Bytes row, Column col) throws Exception {
-    TypedTransaction ttx = TYPEL.wrap(tx);
+  public void process(TransactionBase tx, Bytes row, Column col) throws Exception {
+    TypedTransactionBase ttx = TYPEL.wrap(tx);
 
     ScannerConfiguration scanConfig = new ScannerConfiguration();
     scanConfig.setSpan(Span.prefix(row.toString(), "stat", "sum:"));
@@ -46,7 +48,7 @@ public class HCCounter extends AbstractObserver {
     ttx.mutate().row(row).col(Constants.EXPORT_CHECK_COL).set();
   }
 
-  private int sumAndDelete(Transaction tx, RowIterator rowIterator) {
+  private int sumAndDelete(TransactionBase tx, RowIterator rowIterator) {
     int sum = 0;
     while (rowIterator.hasNext()) {
       Entry<Bytes,ColumnIterator> rEntry = rowIterator.next();
