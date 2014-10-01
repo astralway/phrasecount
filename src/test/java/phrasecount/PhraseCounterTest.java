@@ -64,7 +64,7 @@ public class PhraseCounterTest {
     props.setAccumuloPassword("secret");
     props.setZookeeperRoot("/fluo");
     props.setZookeepers(cluster.getZooKeepers());
-    props.setClearZookeeper(true);
+    props.setAllowReinitialize(true);
     props.setAccumuloTable("data" + tableCounter.getAndIncrement());
     props.setWorkerThreads(5);
     props.setObservers(Arrays.asList(new ObserverConfiguration(PhraseCounter.class.getName()), new ObserverConfiguration(HCCounter.class.getName())));

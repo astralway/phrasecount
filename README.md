@@ -8,10 +8,9 @@ locations that point to them.  When a unique document is no longer referenced
 by any location, then the phrase counts will be decremented appropriately.  
 
 After phrase counts are incremented, export transactions send phrase counts to
-a local file.  A real application would probably export to HDFS or an Accumulo
-table.   The purpose of exporting data is to make it available for query.
-Percolator is not designed to support queries, because its transactions are
-designed for throughput and not responsiveness.
+an Accumulo table.  The purpose of exporting data is to make it available for
+query.  Percolator is not designed to support queries, because its transactions
+are designed for throughput and not responsiveness.
 
 Schema
 ------
@@ -59,11 +58,8 @@ paper.
 Building
 --------
 
-After cloning this repo, build with following command.  May need to install
-Fluo into your local maven repo first.  Fluo is rapidly chaning, if this
-project does not compile try using Fluo commit
-fluo-io/fluo@fd196fb4292af2a7baab79acbb062dfabfdf7b26
-
+After cloning this repo, build with following command. 
+ 
 ```
 mvn package 
 ```

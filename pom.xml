@@ -12,7 +12,8 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <accumulo.version>1.6.0</accumulo.version>
+    <accumulo.version>1.6.1</accumulo.version>
+    <fluo.version>1.0.0-alpha-1</fluo.version>
   </properties>
 
   <build>
@@ -45,12 +46,12 @@
     <dependency>
       <groupId>io.fluo</groupId>
       <artifactId>fluo-api</artifactId>
-      <version>1.0.0-alpha-1-SNAPSHOT</version>
+      <version>${fluo.version}</version>
     </dependency>
     <dependency>
       <groupId>io.fluo</groupId>
       <artifactId>fluo-core</artifactId>
-      <version>1.0.0-alpha-1-SNAPSHOT</version>
+      <version>${fluo.version}</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
