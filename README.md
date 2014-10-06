@@ -162,13 +162,13 @@ load and print commands above can be run passing in
 Generating data
 ---------------
 
-Need some data? Use `links` to generate text files from web pages.
+Need some data? Use `elinks` to generate text files from web pages.
 
 ```
 mkdir data
-links -dump 1 -no-numbering -no-references http://accumulo.apache.org > data/accumulo.txt
-links -dump 1 -no-numbering -no-references http://hadoop.apache.org > data/hadoop.txt
-links -dump 1 -no-numbering -no-references http://zookeeper.apache.org > data/zookeeper.txt
+elinks -dump 1 -no-numbering -no-references http://accumulo.apache.org > data/accumulo.txt
+elinks -dump 1 -no-numbering -no-references http://hadoop.apache.org > data/hadoop.txt
+elinks -dump 1 -no-numbering -no-references http://zookeeper.apache.org > data/zookeeper.txt
 ```
 
 [1]: src/main/java/phrasecount/DocumentLoader.java
