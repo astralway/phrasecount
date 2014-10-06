@@ -143,13 +143,13 @@ instance. Copy this jar to the Fluo observer directory.
 cp target/phrasecount-0.0.1-SNAPSHOT.jar $FLUO_HOME/lib/observers
 ```
 
-Modify `$FLUO_HOME/conf/initialization.properties` and replace the observer
+Modify `$FLUO_HOME/conf/fluo.properties` and replace the observer
 lines with the following:
 
 ```
-io.fluo.worker.observer.0=index,check,,phrasecount.PhraseCounter
-io.fluo.worker.observer.1=export,check,,phrasecount.PhraseExporter,sink=accumulo,instance=<instance name>,zookeepers=<zookeepers>,user=<user>,password=<password>,table=<table>
-io.fluo.worker.observer.weak.0=stat,check,,phrasecount.HCCounter
+io.fluo.observer.0=phrasecount.PhraseCounter
+io.fluo.observer.1=phrasecount.PhraseExporter,sink=accumulo,instance=<instance name>,zookeepers=<zookeepers>,user=<user>,password=<password>,table=<table>
+io.fluo.observer.weak.0=phrasecount.HCCounter
 ```
 
 The line with PhraseExporter has configuration options that need to be
