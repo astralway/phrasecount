@@ -143,13 +143,13 @@ instance. Copy this jar to the Fluo observer directory.
 cp target/phrasecount-0.0.1-SNAPSHOT.jar $FLUO_HOME/lib/observers
 ```
 
-Modify `$FLUO_HOME/conf/initialization.properties` and replace the observer
+Modify `$FLUO_HOME/conf/fluo.properties` and replace the observer
 lines with the following:
 
 ```
-io.fluo.worker.observer.0=index,check,,phrasecount.PhraseCounter
-io.fluo.worker.observer.1=export,check,,phrasecount.PhraseExporter,sink=accumulo,instance=<instance name>,zookeepers=<zookeepers>,user=<user>,password=<password>,table=<table>
-io.fluo.worker.observer.weak.0=stat,check,,phrasecount.HCCounter
+io.fluo.observer.0=phrasecount.PhraseCounter
+io.fluo.observer.1=phrasecount.PhraseExporter,sink=accumulo,instance=<instance name>,zookeepers=<zookeepers>,user=<user>,password=<password>,table=<table>
+io.fluo.observer.weak.0=phrasecount.HCCounter
 ```
 
 The line with PhraseExporter has configuration options that need to be
@@ -162,13 +162,13 @@ load and print commands above can be run passing in
 Generating data
 ---------------
 
-Need some data? Use `links` to generate text files from web pages.
+Need some data? Use `elinks` to generate text files from web pages.
 
 ```
 mkdir data
-links -dump 1 -no-numbering -no-references http://accumulo.apache.org > data/accumulo.txt
-links -dump 1 -no-numbering -no-references http://hadoop.apache.org > data/hadoop.txt
-links -dump 1 -no-numbering -no-references http://zookeeper.apache.org > data/zookeeper.txt
+elinks -dump 1 -no-numbering -no-references http://accumulo.apache.org > data/accumulo.txt
+elinks -dump 1 -no-numbering -no-references http://hadoop.apache.org > data/hadoop.txt
+elinks -dump 1 -no-numbering -no-references http://zookeeper.apache.org > data/zookeeper.txt
 ```
 
 [1]: src/main/java/phrasecount/DocumentLoader.java
