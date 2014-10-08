@@ -23,8 +23,8 @@ uri:&lt;uri&gt;       | doc:hash                | &lt;hash&gt;      | Contains t
 doc:&lt;hash&gt;      | doc:content             | &lt;document&gt;  | The contents of the document
 doc:&lt;hash&gt;      | doc:refCount            | &lt;int&gt;       | The number of URIs that reference this document 
 doc:&lt;hash&gt;      | index:check             | empty             | Setting this columns triggers the observer that indexes the document 
-doc:&lt;hash&gt;      | index:status            | INDEXED or empty  | Used to track the status of wether this document was indexed 
-phrase:&lt;phrase&gt; | stat:check              | empty             | Tiggers observer that handles high cardinality phrases
+doc:&lt;hash&gt;      | index:status            | INDEXED or empty  | Used to track the status of whether this document was indexed 
+phrase:&lt;phrase&gt; | stat:check              | empty             | Triggers observer that handles high cardinality phrases
 phrase:&lt;phrase&gt; | stat:docCount           | &lt;int&gt;       | Total number of documents the phrase occurred in
 phrase:&lt;phrase&gt; | stat:sum                | &lt;int&gt;       | Total number of times the phrase was seen in all documents
 phrase:&lt;phrase&gt; | stat:docCount&lt;int&gt;| &lt;int&gt;       | Random document count column used for high cardinality phrases
@@ -43,7 +43,7 @@ unique documents and may set a notification causing [PhraseCounter][3] to
 execute.  [PhraseCounter][3] increments or decrements global phrase counts for
 all phrases found in a unique document.  [PhraseCounter][3] is run by the
 Fluo worker process and is configured by [Mini][4] when using java to run
-this example.  [PhraseCounter][3] may set a notifcation which causes
+this example.  [PhraseCounter][3] may set a notification which causes
 [PhraseExporter][5] to run.  [PhraseExporter][5] exports phrases to a file with
 a sequence number.  The sequence number allows you to know which version of the
 phrase in the file is the most recent.  [PhraseExporter][5] can be configured
@@ -52,13 +52,13 @@ to export to an Accumulo table.
 For high cardinality phrases, [PhraseCounter][3] will update a random column
 and set a notification that causes [HCCounter][6] to run.  [HCCounter][6] will
 read all of random columns and update the main count.  This breaks updating
-high cardinality phrases into two transaction, as mentioned in the Percolator
+high cardinality phrases into two transactions, as mentioned in the Percolator
 paper.
 
 Building
 --------
 
-After cloning this repo, build with following command. 
+After cloning this repository, build with following command. 
  
 ```
 mvn package 
@@ -81,9 +81,6 @@ After the mini command prints out `Wrote : fluo.properties` then its ready to us
 This command will automatically configure [PhraseExporter][5] to export phrases
 to an Accumulo table named `dataExport`.
 
-If you have built Accumulo 1.6.1-SNAPSHOT, you can add
-`-Daccumulo.version=1.6.1-SNAPSHOT` to the maven command.  
-
 The reason `-Dexec.classpathScope=test` is set is because it adds the test
 [log4j.properties][7] file to the classpath.
 
@@ -99,7 +96,7 @@ mvn exec:java -Dexec.mainClass=phrasecount.cmd.Load -Dexec.args="fluo.properties
 Printing phrases
 ----------------
 
-After documents were added, the following command will printout phrase counts.
+After documents are added, the following command will print out phrase counts.
 Try modifying a document you added and running the load command again, you
 should eventually see the phrase counts change.
 
@@ -118,7 +115,7 @@ Comparing exported phrases
 
 After all export transactions have run, the phrase counts in the Accumulo
 export table should be the same as those stored in the Fluo table.  The
-following utility will iterate over the two and look for differernces.
+following utility will iterate over the two and look for differences.
 
 ```
 mvn exec:java -Dexec.mainClass=phrasecount.cmd.Compare -Dexec.args="fluo.properties data dataExport" -Dexec.classpathScope=test
@@ -126,7 +123,7 @@ mvn exec:java -Dexec.mainClass=phrasecount.cmd.Compare -Dexec.args="fluo.propert
 
 If this command prints nothing, then all is good.  If things are not good, then
 try enabling transaction trace logging and rerunning the scenario.  Adding the
-following to log4j.properties will enable this tracing.  This config is
+following to log4j.properties will enable this tracing.  This configuration is
 commented out in the test [log4j.properties][7] file.
 
 ```
