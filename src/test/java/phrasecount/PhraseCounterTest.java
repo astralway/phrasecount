@@ -1,25 +1,20 @@
 package phrasecount;
 
-import static phrasecount.Constants.DOC_CONTENT_COL;
-import static phrasecount.Constants.DOC_REF_COUNT_COL;
-import static phrasecount.Constants.STAT_DOC_COUNT_COL;
-import static phrasecount.Constants.STAT_SUM_COL;
-import static phrasecount.Constants.TYPEL;
-import io.fluo.api.client.FluoClient;
-import io.fluo.api.client.FluoFactory;
-import io.fluo.api.client.LoaderExecutor;
-import io.fluo.api.client.MiniFluo;
-import io.fluo.api.config.FluoConfiguration;
-import io.fluo.api.config.ObserverConfiguration;
-import io.fluo.api.data.Column;
-import io.fluo.api.types.TypedSnapshot;
-import io.fluo.api.types.TypedSnapshotBase.Value;
-
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import io.fluo.api.client.FluoAdmin.InitOpts;
+import io.fluo.api.client.FluoClient;
+import io.fluo.api.client.FluoFactory;
+import io.fluo.api.client.LoaderExecutor;
+import io.fluo.api.config.FluoConfiguration;
+import io.fluo.api.config.ObserverConfiguration;
+import io.fluo.api.data.Column;
+import io.fluo.api.mini.MiniFluo;
+import io.fluo.api.types.TypedSnapshot;
+import io.fluo.api.types.TypedSnapshotBase.Value;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.accumulo.minicluster.MiniAccumuloCluster;
 import org.apache.accumulo.minicluster.MiniAccumuloConfig;
@@ -30,6 +25,12 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+
+import static phrasecount.Constants.DOC_CONTENT_COL;
+import static phrasecount.Constants.DOC_REF_COUNT_COL;
+import static phrasecount.Constants.STAT_DOC_COUNT_COL;
+import static phrasecount.Constants.STAT_SUM_COL;
+import static phrasecount.Constants.TYPEL;
 
 //TODO make this an integration test
 
@@ -59,27 +60,27 @@ public class PhraseCounterTest {
   public void setUpFluo() throws Exception {
     // TODO add helper code to make this shorter
     props = new FluoConfiguration();
+    props.setMiniStartAccumulo(false);
+    props.setApplicationName("phrasecount");
     props.setAccumuloInstance(cluster.getInstanceName());
     props.setAccumuloUser("root");
     props.setAccumuloPassword("secret");
-    props.setZookeeperRoot("/fluo");
-    props.setZookeepers(cluster.getZooKeepers());
-    props.setAllowReinitialize(true);
+    props.setInstanceZookeepers(cluster.getZooKeepers()+"/fluo");
+    props.setAccumuloZookeepers(cluster.getZooKeepers());
     props.setAccumuloTable("data" + tableCounter.getAndIncrement());
     props.setWorkerThreads(5);
     props.setObservers(Arrays.asList(new ObserverConfiguration(PhraseCounter.class.getName()), new ObserverConfiguration(HCCounter.class.getName())));
 
-    FluoFactory.newAdmin(props).initialize();
+    FluoFactory.newAdmin(props).initialize(new InitOpts().setClearTable(true).setClearZookeeper(true));
 
     miniFluo = FluoFactory.newMiniFluo(props);
-    miniFluo.start();
   }
 
   @After
   public void tearDownFluo() throws Exception {
-    miniFluo.stop();
+    miniFluo.close();
   }
-  
+
   static class PhraseInfo {
     public PhraseInfo() {}
 
@@ -90,6 +91,7 @@ public class PhraseCounterTest {
     int sum;
     int numDocs;
 
+    @Override
     public boolean equals(Object o) {
       if (o instanceof PhraseInfo) {
         PhraseInfo opi = (PhraseInfo) o;
@@ -99,6 +101,7 @@ public class PhraseCounterTest {
       return false;
     }
 
+    @Override
     public String toString() {
       return numDocs + " " + sum;
     }
@@ -119,7 +122,7 @@ public class PhraseCounterTest {
 
     return pi;
   }
-  
+
   private void loadDocument(LoaderExecutor le, String uri, String content) {
     Document doc = new Document(uri, content);
     le.execute(new DocumentLoader(doc));
@@ -132,7 +135,7 @@ public class PhraseCounterTest {
     FluoConfiguration lep = new FluoConfiguration(props);
     lep.setLoaderThreads(0);
     lep.setLoaderQueueSize(0);
-    
+
     FluoClient fluoClient = FluoFactory.newClient(lep);
 
     LoaderExecutor le = fluoClient.newLoaderExecutor();
@@ -249,4 +252,4 @@ public class PhraseCounterTest {
     miniFluo.waitForObservers();
   }
 }
-  
+

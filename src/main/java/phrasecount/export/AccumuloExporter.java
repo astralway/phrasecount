@@ -10,7 +10,9 @@ import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.BatchWriter;
 import org.apache.accumulo.core.client.BatchWriterConfig;
+import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.MutationsRejectedException;
+import org.apache.accumulo.core.client.TableExistsException;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.client.ZooKeeperInstance;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
@@ -27,7 +29,17 @@ public class AccumuloExporter implements Exporter {
       ZooKeeperInstance zki = new ZooKeeperInstance(instanceName, zookeepers);
 
       // TODO need to close batch writer
-      bw = zki.getConnector(user, new PasswordToken(password)).createBatchWriter(table, new BatchWriterConfig());
+      Connector conn = zki.getConnector(user, new PasswordToken(password));
+      try{
+        bw = conn.createBatchWriter(table, new BatchWriterConfig());
+      }catch (TableNotFoundException tnfe){
+        try {
+          conn.tableOperations().create(table);
+        } catch (TableExistsException e) {
+        }
+
+        bw = conn.createBatchWriter(table, new BatchWriterConfig());
+      }
     }
 
     @Override

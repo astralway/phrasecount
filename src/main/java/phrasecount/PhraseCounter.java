@@ -1,5 +1,20 @@
 package phrasecount;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
+
+import io.fluo.api.client.TransactionBase;
+import io.fluo.api.data.Bytes;
+import io.fluo.api.data.Column;
+import io.fluo.api.observer.AbstractObserver;
+import io.fluo.api.types.TypedSnapshotBase.Value;
+import io.fluo.api.types.TypedTransactionBase;
+import org.apache.commons.math.stat.descriptive.moment.Mean;
+import org.apache.commons.math.stat.descriptive.moment.StandardDeviation;
+
 import static phrasecount.Constants.DOC_CONTENT_COL;
 import static phrasecount.Constants.DOC_REF_COUNT_COL;
 import static phrasecount.Constants.EXPORT_CHECK_COL;
@@ -11,22 +26,6 @@ import static phrasecount.Constants.STAT_CHECK_COL;
 import static phrasecount.Constants.STAT_DOC_COUNT_COL;
 import static phrasecount.Constants.STAT_SUM_COL;
 import static phrasecount.Constants.TYPEL;
-import io.fluo.api.data.Bytes;
-import io.fluo.api.data.Column;
-import io.fluo.api.observer.AbstractObserver;
-import io.fluo.api.types.TypedSnapshotBase.Value;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Random;
-
-import io.fluo.api.types.TypedTransactionBase;
-
-import io.fluo.api.client.TransactionBase;
-import org.apache.commons.math.stat.descriptive.moment.Mean;
-import org.apache.commons.math.stat.descriptive.moment.StandardDeviation;
 
 /**
  * An Observer that updates phrase counts when a document is added or removed.  In needed, the observer that exports phrase counts is triggered.
@@ -44,7 +43,7 @@ public class PhraseCounter extends AbstractObserver {
     TypedTransactionBase ttx = TYPEL.wrap(tx);
 
     IndexStatus status = getStatus(ttx, row);
-    int refCount = ttx.get().row(row).col(DOC_REF_COUNT_COL).toInteger();
+    int refCount = ttx.get().row(row).col(DOC_REF_COUNT_COL).toInteger(0);
 
     if (status == IndexStatus.UNINDEXED && refCount > 0) {
       updatePhraseCounts(ttx, row, 1);
@@ -180,7 +179,7 @@ public class PhraseCounter extends AbstractObserver {
 
       int newSum = sum + multiplier * entry.getValue();
       int newDocCount = docCount + multiplier * 1;
-      
+
       ttx.mutate().row(phraseRow).col(randSumCol).set(newSum);
       ttx.mutate().row(phraseRow).col(randDocCol).set(newDocCount);
       ttx.mutate().row(phraseRow).col(STAT_CHECK_COL).weaklyNotify();

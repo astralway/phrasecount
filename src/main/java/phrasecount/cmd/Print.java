@@ -33,6 +33,7 @@ public class Print {
       this.docCount = docCount;
     }
 
+    @Override
     public boolean equals(Object o) {
       if (o instanceof PhraseCount) {
         PhraseCount op = (PhraseCount) o;
@@ -75,8 +76,7 @@ public class Print {
       System.exit(-1);
     }
 
-    try (FluoClient fluoClient = FluoFactory.newClient(new FluoConfiguration(new File(args[0])))) {
-      Snapshot snap = fluoClient.newSnapshot();
+    try (FluoClient fluoClient = FluoFactory.newClient(new FluoConfiguration(new File(args[0]))); Snapshot snap = fluoClient.newSnapshot()) {
       Iterator<PhraseCount> phraseIter = createPhraseIterator(snap);
 
       while (phraseIter.hasNext()) {
@@ -94,8 +94,6 @@ public class Print {
       System.out.printf("# unique documents    : %,d\n", documentCount);
       System.out.printf("# processed documents : %,d\n", numIndexedDocs);
       System.out.println();
-
-
     }
 
     // TODO figure what threads are hanging around

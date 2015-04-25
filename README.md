@@ -127,7 +127,7 @@ following to log4j.properties will enable this tracing.  This configuration is
 commented out in the test [log4j.properties][7] file.
 
 ```
-log4j.logger.io.fluo.core.impl.TracingTransaction=TRACE
+log4j.logger.io.fluo.tx=TRACE
 ```
 
 Deploying example
@@ -137,15 +137,15 @@ The following instructions cover running this example on an installed Fluo
 instance. Copy this jar to the Fluo observer directory.
 
 ```
-cp target/phrasecount-0.0.1-SNAPSHOT.jar $FLUO_HOME/lib/observers
+cp target/phrasecount-0.0.1-SNAPSHOT.jar $FLUO_HOME/apps/<appname>/observers
 ```
 
-Modify `$FLUO_HOME/conf/fluo.properties` and replace the observer
+Modify `$FLUO_HOME/apps/<appname>/fluo.properties` and replace the observer
 lines with the following:
 
 ```
 io.fluo.observer.0=phrasecount.PhraseCounter
-io.fluo.observer.1=phrasecount.PhraseExporter,sink=accumulo,instance=<instance name>,zookeepers=<zookeepers>,user=<user>,password=<password>,table=<table>
+io.fluo.observer.1=phrasecount.PhraseExporter,sink=accumulo,instance=${io.fluo.client.accumulo.instance},zookeepers=${io.fluo.client.accumulo.zookeepers},user=${io.fluo.client.accumulo.user},password=${io.fluo.client.accumulo.password},table=pcExport
 io.fluo.observer.weak.0=phrasecount.HCCounter
 ```
 
@@ -154,7 +154,24 @@ configured to the Accumulo table where you want phrases to be exported.
 
 Now initialize and start Fluo as outlined in its docs. Once started the
 load and print commands above can be run passing in
-`$FLUO_HOME/conf/fluo.properties`
+`$FLUO_HOME/apps/<appname>/conf/fluo.properties`
+
+There are two example bash scripts that run this test using the Fluo tar
+distribution and serve as executable documentation for deployment.  The
+previous maven commands using the exec plugin are convenient for a development
+environment, using the following scripts shows how things would work in a
+production environment.
+
+  * [run-mini.sh](bin/run-mini.sh) : Runs this example using mini fluo started
+    using the tar distribution.  Running this way does not require setting up
+    Hadoop, Zookeeper, and Accumulo separately.  Just download or build the
+    Fluo tar distribution, untar it, and point the script to that directory.
+    This is the easiest way to simulate a production environment.
+  * [run-cluster.sh] (bin/run-cluster.sh) : Runs this example with YARN using
+    the Fluo tar distribution.  Running in this way requires setting up Hadoop,
+    Zookeeper, and Accumulo instances separately.  The [fluo-dev][8] and
+    [fluo-deploy][9] projects were created to ease setting up these external
+    dependencies.
 
 Generating data
 ---------------
@@ -175,4 +192,6 @@ elinks -dump 1 -no-numbering -no-references http://zookeeper.apache.org > data/z
 [5]: src/main/java/phrasecount/PhraseExporter.java
 [6]: src/main/java/phrasecount/HCCounter.java
 [7]: src/test/resources/log4j.properties
+[8]: https://github.com/fluo-io/fluo-dev
+[9]: https://github.com/fluo-io/fluo-deploy
 

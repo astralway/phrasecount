@@ -1,16 +1,18 @@
 package phrasecount.cmd;
 
-import io.fluo.api.client.FluoClient;
-import io.fluo.api.client.FluoFactory;
-import io.fluo.api.client.Snapshot;
-import io.fluo.api.config.FluoConfiguration;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.PeekingIterator;
+import io.fluo.api.client.FluoClient;
+import io.fluo.api.client.FluoFactory;
+import io.fluo.api.client.Snapshot;
+import io.fluo.api.config.FluoConfiguration;
 import org.apache.accumulo.core.client.AccumuloException;
 import org.apache.accumulo.core.client.AccumuloSecurityException;
 import org.apache.accumulo.core.client.Connector;
@@ -23,12 +25,7 @@ import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.security.Authorizations;
 import org.apache.hadoop.io.Text;
-
 import phrasecount.cmd.Print.PhraseCount;
-
-import com.google.common.base.Function;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.PeekingIterator;
 
 /**
  * A utility to compare the phrase counts stored in the Fluo table to those stored in the export table.
@@ -71,8 +68,7 @@ public class Compare {
 
     FluoConfiguration props = new FluoConfiguration(new File(args[0]));
 
-    try (FluoClient fluoClient = FluoFactory.newClient(props)) {
-      Snapshot snap = fluoClient.newSnapshot();
+    try (FluoClient fluoClient = FluoFactory.newClient(props); Snapshot snap = fluoClient.newSnapshot()) {
 
       PeekingIterator<PhraseCount> fluoIter = Iterators.peekingIterator(Print.createPhraseIterator(snap));
       PeekingIterator<PhraseCount> accumuloIter = Iterators.peekingIterator(createPhraseIterator(props, args[2]));
@@ -128,7 +124,7 @@ public class Compare {
       AccumuloException,
       AccumuloSecurityException, TableNotFoundException {
 
-    ZooKeeperInstance zki = new ZooKeeperInstance(fluoConfig.getAccumuloInstance(), fluoConfig.getZookeepers());
+    ZooKeeperInstance zki = new ZooKeeperInstance(fluoConfig.getAccumuloInstance(), fluoConfig.getAccumuloZookeepers());
     Connector conn = zki.getConnector(fluoConfig.getAccumuloUser(), new PasswordToken(fluoConfig.getAccumuloPassword()));
 
     Scanner scanner = conn.createScanner(table, Authorizations.EMPTY);

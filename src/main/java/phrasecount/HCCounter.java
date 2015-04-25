@@ -1,9 +1,8 @@
 package phrasecount;
 
-import static phrasecount.Constants.EXPORT_DOC_COUNT_COL;
-import static phrasecount.Constants.EXPORT_SUM_COL;
-import static phrasecount.Constants.STAT_CHECK_COL;
-import static phrasecount.Constants.TYPEL;
+import java.util.Map.Entry;
+
+import io.fluo.api.client.TransactionBase;
 import io.fluo.api.config.ScannerConfiguration;
 import io.fluo.api.data.Bytes;
 import io.fluo.api.data.Column;
@@ -11,12 +10,12 @@ import io.fluo.api.data.Span;
 import io.fluo.api.iterator.ColumnIterator;
 import io.fluo.api.iterator.RowIterator;
 import io.fluo.api.observer.AbstractObserver;
-
-import java.util.Map.Entry;
-
 import io.fluo.api.types.TypedTransactionBase;
 
-import io.fluo.api.client.TransactionBase;
+import static phrasecount.Constants.EXPORT_DOC_COUNT_COL;
+import static phrasecount.Constants.EXPORT_SUM_COL;
+import static phrasecount.Constants.STAT_CHECK_COL;
+import static phrasecount.Constants.TYPEL;
 
 /**
  * This Observer processes high cardinality phrases. It sums up all of the random stat columns that were set.
@@ -29,13 +28,13 @@ public class HCCounter extends AbstractObserver {
     TypedTransactionBase ttx = TYPEL.wrap(tx);
 
     ScannerConfiguration scanConfig = new ScannerConfiguration();
-    scanConfig.setSpan(Span.prefix(row.toString(), "stat", "sum:"));
+    scanConfig.setSpan(Span.prefix(row.toString(), new Column("stat", "sum:")));
 
     int sum = sumAndDelete(tx, tx.get(scanConfig));
     int newSum = ttx.get().row(row).col(Constants.STAT_SUM_COL).toInteger(0) + sum;
     ttx.mutate().row(row).col(Constants.STAT_SUM_COL).set(newSum);
 
-    scanConfig.setSpan(Span.prefix(row.toString(), "stat", "docCount:"));
+    scanConfig.setSpan(Span.prefix(row.toString(), new Column("stat", "docCount:")));
     int docCount = sumAndDelete(tx, tx.get(scanConfig));
     int newDocCount = ttx.get().row(row).col(Constants.STAT_DOC_COUNT_COL).toInteger(0) + docCount;
     ttx.mutate().row(row).col(Constants.STAT_DOC_COUNT_COL).set(newDocCount);

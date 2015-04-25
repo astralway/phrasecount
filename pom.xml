@@ -13,7 +13,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <accumulo.version>1.6.1</accumulo.version>
-    <fluo.version>1.0.0-alpha-1</fluo.version>
+    <fluo.version>1.0.0-beta-1</fluo.version>
   </properties>
 
   <build>
@@ -56,14 +56,19 @@
     </dependency>
     <dependency>
       <groupId>org.apache.accumulo</groupId>
-      <artifactId>accumulo-minicluster</artifactId>
-      <version>${accumulo.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.accumulo</groupId>
       <artifactId>accumulo-core</artifactId>
       <version>${accumulo.version}</version>
     </dependency>
+    <dependency>
+      <groupId>io.fluo</groupId>
+      <artifactId>fluo-mini</artifactId>
+      <version>${fluo.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.accumulo</groupId>
+      <artifactId>accumulo-minicluster</artifactId>
+      <version>${accumulo.version}</version>
+    </dependency>
   </dependencies>
-
 </project>

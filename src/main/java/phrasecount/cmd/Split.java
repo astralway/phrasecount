@@ -1,11 +1,10 @@
 package phrasecount.cmd;
 
-import io.fluo.api.config.FluoConfiguration;
-
 import java.io.File;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import io.fluo.api.config.FluoConfiguration;
 import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.ZooKeeperInstance;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
@@ -24,7 +23,7 @@ public class Split {
     }
 
     FluoConfiguration fluoConfig = new FluoConfiguration(new File(args[0]));
-    ZooKeeperInstance zki = new ZooKeeperInstance(fluoConfig.getAccumuloInstance(), fluoConfig.getZookeepers());
+    ZooKeeperInstance zki = new ZooKeeperInstance(fluoConfig.getAccumuloInstance(), fluoConfig.getAccumuloZookeepers());
     Connector conn = zki.getConnector(fluoConfig.getAccumuloUser(), new PasswordToken(fluoConfig.getAccumuloPassword()));
 
     SortedSet<Text> splits = new TreeSet<Text>();
