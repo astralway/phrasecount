@@ -1,15 +1,14 @@
 package phrasecount;
 
+import io.fluo.api.client.Loader;
+import io.fluo.api.client.TransactionBase;
+import io.fluo.api.types.TypedTransactionBase;
+
 import static phrasecount.Constants.DOC_CONTENT_COL;
 import static phrasecount.Constants.DOC_HASH_COL;
 import static phrasecount.Constants.DOC_REF_COUNT_COL;
 import static phrasecount.Constants.INDEX_CHECK_COL;
 import static phrasecount.Constants.TYPEL;
-
-import io.fluo.api.types.TypedTransactionBase;
-
-import io.fluo.api.client.TransactionBase;
-import io.fluo.api.client.Loader;
 
 /**
  * Executes document load transactions which dedupe and reference count documents.  IF needed, the observer that updates phrase counts is triggered.
@@ -22,9 +21,9 @@ public class DocumentLoader implements Loader {
   public DocumentLoader(Document doc) {
     this.document = doc;
   }
-  
+
   @Override
-  public void load(TransactionBase tx) throws Exception {
+  public void load(TransactionBase tx, Context context) throws Exception {
 
     // TODO need a strategy for dealing w/ large documents. If a worker processes many large documents concurrently it could cause memory exhaustion. . Could
     // large documents up into pieces, however not sure if the example should be complicated w/ this.
