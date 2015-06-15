@@ -1,6 +1,8 @@
 Phrase Count
 ============
 
+[![Build Status](https://travis-ci.org/fluo-io/phrasecount.svg?branch=master)](https://travis-ci.org/fluo-io/phrasecount)
+
 An example application that computes phrase counts for unique documents using
 Fluo. Each new unique document that is added causes phrase counts to be
 incremented. Unique documents have reference counts based on the number of
