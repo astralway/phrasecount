@@ -31,10 +31,16 @@ export CLASSPATH=$PC_JAR:`$FLUO_HOME/bin/fluo classpath -a -z -H`:$FLUO_HOME/lib
 (cd $PC_HOME; mvn package -DskipTests)
 cp $PC_JAR $FLUO_HOME/apps/phrasecount/lib/
 
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  export SED="sed -i .bak"
+else
+  export SED="sed -i"
+fi
+
 # Configure Fluo
-sed -i '/io.fluo.observer/d' $APP_PROPS
+$SED '/io.fluo.observer/d' $APP_PROPS
 #need to uncomment zookeeper line, if its commented for interpolation to work
-sed -i 's/#io.fluo.client.accumulo.zookeepers/io.fluo.client.accumulo.zookeepers/' $APP_PROPS
+$SED 's/#io.fluo.client.accumulo.zookeepers/io.fluo.client.accumulo.zookeepers/' $APP_PROPS
 echo 'io.fluo.observer.0=phrasecount.PhraseCounter' >> $APP_PROPS
 echo 'io.fluo.observer.1=phrasecount.PhraseExporter,sink=accumulo,instance=${io.fluo.client.accumulo.instance},zookeepers=${io.fluo.client.accumulo.zookeepers},user=${io.fluo.client.accumulo.user},password=${io.fluo.client.accumulo.password},table=pcExport' >> $APP_PROPS
 echo 'io.fluo.observer.weak.0=phrasecount.HCCounter' >> $APP_PROPS
