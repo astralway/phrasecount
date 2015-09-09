@@ -1,4 +1,4 @@
-package phrasecount;
+package phrasecount.pojos;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -7,7 +7,8 @@ import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
 
 public class Document {
-  // the location where the document came from. This is needed inorder to detect when a document changes.
+  // the location where the document came from. This is needed inorder to detect when a document
+  // changes.
   private String uri;
 
   // the text of a document.
@@ -38,10 +39,10 @@ public class Document {
     return hash = hasher.hash().toString();
   }
 
-  public Map<String,Integer> getPhrases() {
+  public Map<String, Integer> getPhrases() {
     String[] tokens = content.toLowerCase().split("[^\\p{Alnum}]+");
 
-    Map<String,Integer> phrases = new HashMap<String,Integer>();
+    Map<String, Integer> phrases = new HashMap<String, Integer>();
     for (int i = 3; i < tokens.length; i++) {
       String phrase = tokens[i - 3] + " " + tokens[i - 2] + " " + tokens[i - 1] + " " + tokens[i];
       Integer old = phrases.put(phrase, 1);
