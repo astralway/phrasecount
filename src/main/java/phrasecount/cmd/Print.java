@@ -1,5 +1,8 @@
 package phrasecount.cmd;
 
+import java.io.File;
+import java.util.Map.Entry;
+
 import io.fluo.api.client.FluoClient;
 import io.fluo.api.client.FluoFactory;
 import io.fluo.api.client.Snapshot;
@@ -10,79 +13,29 @@ import io.fluo.api.data.Column;
 import io.fluo.api.data.Span;
 import io.fluo.api.iterator.ColumnIterator;
 import io.fluo.api.iterator.RowIterator;
-
-import java.io.File;
-import java.util.Iterator;
-import java.util.Map.Entry;
-
 import phrasecount.Constants;
-
-import com.google.common.base.Function;
-import com.google.common.collect.Iterators;
+import phrasecount.pojos.PhraseAndCounts;
+import phrasecount.query.PhraseCountTable;
 
 public class Print {
 
-  static class PhraseCount {
-    String phrase;
-    int sum;
-    int docCount;
-
-    PhraseCount(String phrase, int sum, int docCount) {
-      this.phrase = phrase;
-      this.sum = sum;
-      this.docCount = docCount;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (o instanceof PhraseCount) {
-        PhraseCount op = (PhraseCount) o;
-
-        return phrase.equals(op.phrase) && sum == op.sum && docCount == op.docCount;
-      }
-
-      return false;
-    }
-  }
-
-  static class PhraseRowTransform implements Function<Entry<Bytes,ColumnIterator>,PhraseCount> {
-
-    @Override
-    public PhraseCount apply(Entry<Bytes,ColumnIterator> input) {
-      String phrase = input.getKey().toString().substring(7);
-
-      int sum = 0;
-      int docCount = 0;
-
-      ColumnIterator citer = input.getValue();
-      while (citer.hasNext()) {
-        Entry<Column,Bytes> colEntry = citer.next();
-        String cq = colEntry.getKey().getQualifier().toString();
-
-        if (cq.equals("sum"))
-          sum = Integer.parseInt(colEntry.getValue().toString());
-        else
-          docCount = Integer.parseInt(colEntry.getValue().toString());
-      }
-
-      return new PhraseCount(phrase, sum, docCount);
-    }
-
-  }
-
   public static void main(String[] args) throws Exception {
-    if (args.length != 1) {
-      System.err.println("Usage : " + Print.class.getName() + " <fluo props file>");
+    if (args.length != 2) {
+      System.err
+          .println("Usage : " + Print.class.getName() + " <fluo props file> <export table name>");
       System.exit(-1);
     }
 
-    try (FluoClient fluoClient = FluoFactory.newClient(new FluoConfiguration(new File(args[0]))); Snapshot snap = fluoClient.newSnapshot()) {
-      Iterator<PhraseCount> phraseIter = createPhraseIterator(snap);
+    FluoConfiguration fluoConfig = new FluoConfiguration(new File(args[0]));
 
-      while (phraseIter.hasNext()) {
-        PhraseCount phraseCount = phraseIter.next();
-        System.out.printf("%7d %7d '%s'\n", phraseCount.docCount, phraseCount.sum, phraseCount.phrase);
-      }
+    PhraseCountTable pcTable = new PhraseCountTable(fluoConfig, args[1]);
+    for (PhraseAndCounts phraseCount : pcTable) {
+      System.out.printf("%7d %7d '%s'\n", phraseCount.docPhraseCount, phraseCount.totalPhraseCount,
+          phraseCount.phrase);
+    }
+
+    try (FluoClient fluoClient = FluoFactory.newClient(fluoConfig);
+        Snapshot snap = fluoClient.newSnapshot()) {
 
       // TODO could precompute this using observers
       int uriCount = count(snap, "uri:", Constants.DOC_HASH_COL);
@@ -110,21 +63,10 @@ public class Print {
     RowIterator riter = snap.get(scanConfig);
     while (riter.hasNext()) {
       @SuppressWarnings("unused")
-      Entry<Bytes,ColumnIterator> rowEntry = riter.next();
+      Entry<Bytes, ColumnIterator> rowEntry = riter.next();
       count++;
     }
 
     return count;
   }
-
-  static Iterator<PhraseCount> createPhraseIterator(Snapshot snap) throws Exception {
-    ScannerConfiguration scanConfig = new ScannerConfiguration();
-    scanConfig.setSpan(Span.prefix("phrase:"));
-    scanConfig.fetchColumn(Constants.STAT_SUM_COL.getFamily(), Constants.STAT_SUM_COL.getQualifier());
-    scanConfig.fetchColumn(Constants.STAT_DOC_COUNT_COL.getFamily(), Constants.STAT_DOC_COUNT_COL.getQualifier());
-
-    Iterator<PhraseCount> phraseIter = Iterators.transform(snap.get(scanConfig), new PhraseRowTransform());
-    return phraseIter;
-  }
-
 }

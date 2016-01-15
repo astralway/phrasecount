@@ -1,7 +1,6 @@
 package phrasecount.cmd;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,18 +11,14 @@ import com.beust.jcommander.ParameterException;
 import io.fluo.api.client.FluoAdmin.InitOpts;
 import io.fluo.api.client.FluoFactory;
 import io.fluo.api.config.FluoConfiguration;
-import io.fluo.api.config.ObserverConfiguration;
 import io.fluo.api.mini.MiniFluo;
-import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.minicluster.MemoryUnit;
 import org.apache.accumulo.minicluster.MiniAccumuloCluster;
 import org.apache.accumulo.minicluster.MiniAccumuloConfig;
 import org.apache.accumulo.minicluster.ServerType;
 import org.apache.commons.configuration.PropertiesConfiguration;
-import phrasecount.HCCounter;
-import phrasecount.PhraseCounter;
-import phrasecount.PhraseExporter;
+import phrasecount.Application;
 
 
 public class Mini {
@@ -61,12 +56,13 @@ public class Mini {
       System.exit(-1);
     }
 
-    MiniAccumuloConfig cfg = new MiniAccumuloConfig(new File(params.args.get(0)), new String("secret"));
+    MiniAccumuloConfig cfg =
+        new MiniAccumuloConfig(new File(params.args.get(0)), new String("secret"));
     cfg.setZooKeeperPort(params.zookeeperPort);
     cfg.setNumTservers(params.tabletServers);
     if (params.moreMemory) {
       cfg.setMemory(ServerType.TABLET_SERVER, 2, MemoryUnit.GIGABYTE);
-      Map<String,String> site = new HashMap<String,String>();
+      Map<String, String> site = new HashMap<String, String>();
       site.put(Property.TSERV_DATACACHE_SIZE.getKey(), "768M");
       site.put(Property.TSERV_INDEXCACHE_SIZE.getKey(), "256M");
       cfg.setSiteConfig(site);
@@ -82,22 +78,15 @@ public class Mini {
     fluoConfig.setAccumuloUser("root");
     fluoConfig.setAccumuloPassword("secret");
     fluoConfig.setAccumuloZookeepers(cluster.getZooKeepers());
-    fluoConfig.setInstanceZookeepers(cluster.getZooKeepers()+"/fluo");
-
+    fluoConfig.setInstanceZookeepers(cluster.getZooKeepers() + "/fluo");
 
     fluoConfig.setAccumuloTable("data");
     fluoConfig.setWorkerThreads(params.workerThreads);
 
     fluoConfig.setApplicationName("phrasecount");
 
-    List<ObserverConfiguration> observers = new ArrayList<ObserverConfiguration>();
-    observers.add(new ObserverConfiguration(PhraseCounter.class.getName()));
-
-    Map<String,String> exportConfig = setupAccumuloExport(cluster);
-    observers.add(new ObserverConfiguration(PhraseExporter.class.getName()).setParameters(exportConfig));
-
-    observers.add(new ObserverConfiguration(HCCounter.class.getName()));
-    fluoConfig.setObservers(observers);
+    Application.configure(fluoConfig, new Application.Options(17, 17, cluster.getInstanceName(),
+        cluster.getZooKeepers(), "root", "secret", "pcExport"));
 
     FluoFactory.newAdmin(fluoConfig).initialize(new InitOpts());
 
@@ -110,21 +99,5 @@ public class Mini {
 
     System.out.println();
     System.out.println("Wrote : " + params.args.get(1));
-  }
-
-  private static Map<String,String> setupAccumuloExport(MiniAccumuloCluster cluster) throws Exception {
-    Connector conn = cluster.getConnector("root", "secret");
-    conn.tableOperations().create("dataExport");
-
-    Map<String,String> exportConfig = new HashMap<String,String>();
-
-    exportConfig.put("sink", "accumulo");
-    exportConfig.put("instance", cluster.getInstanceName());
-    exportConfig.put("zookeepers", cluster.getZooKeepers());
-    exportConfig.put("user", "root");
-    exportConfig.put("password", "secret");
-    exportConfig.put("table", "dataExport");
-
-    return exportConfig;
   }
 }
