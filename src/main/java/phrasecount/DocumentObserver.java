@@ -23,12 +23,11 @@ import static phrasecount.Constants.TYPEL;
 /**
  * An Observer that updates phrase counts when a document is added or removed.
  */
-
 public class DocumentObserver extends AbstractObserver {
 
   private CollisionFreeMap<String, Counts> pcMap;
 
-  private static enum IndexStatus {
+  private enum IndexStatus {
     INDEXED, UNINDEXED
   }
 
@@ -73,11 +72,9 @@ public class DocumentObserver extends AbstractObserver {
     tx.delete(row, DOC_CONTENT_COL);
     tx.delete(row, DOC_REF_COUNT_COL);
     tx.delete(row, INDEX_STATUS_COL);
-
   }
 
-  private void updatePhraseCounts(TypedTransactionBase ttx, Bytes row, int multiplier)
-      throws Exception {
+  private void updatePhraseCounts(TypedTransactionBase ttx, Bytes row, int multiplier) {
     String content = ttx.get().row(row).col(Constants.DOC_CONTENT_COL).toString();
 
     // this makes the assumption that the implementation of getPhrases is invariant. This is
@@ -88,13 +85,13 @@ public class DocumentObserver extends AbstractObserver {
     Map<String, Integer> phrases = new Document(null, content).getPhrases();
     Map<String, Counts> updates = new HashMap<>(phrases.size());
     for (Entry<String, Integer> entry : phrases.entrySet()) {
-      updates.put(entry.getKey(), new Counts(1 * multiplier, entry.getValue() * multiplier));
+      updates.put(entry.getKey(), new Counts(multiplier, entry.getValue() * multiplier));
     }
 
     pcMap.update(ttx, updates);
   }
 
-  private IndexStatus getStatus(TypedTransactionBase tx, Bytes row) throws Exception {
+  private IndexStatus getStatus(TypedTransactionBase tx, Bytes row) {
     String status = tx.get().row(row).col(INDEX_STATUS_COL).toString();
 
     if (status == null)

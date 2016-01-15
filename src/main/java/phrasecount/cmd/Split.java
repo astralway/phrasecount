@@ -10,11 +10,9 @@ import org.apache.accumulo.core.client.ZooKeeperInstance;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.hadoop.io.Text;
 
-
 /**
- * Utiltiy to add splits to the Accumulo table used by Fluo.
+ * Utility to add splits to the Accumulo table used by Fluo.
  */
-
 public class Split {
   public static void main(String[] args) throws Exception {
     if (args.length != 2) {
@@ -28,7 +26,7 @@ public class Split {
     Connector conn = zki.getConnector(fluoConfig.getAccumuloUser(),
         new PasswordToken(fluoConfig.getAccumuloPassword()));
 
-    SortedSet<Text> splits = new TreeSet<Text>();
+    SortedSet<Text> splits = new TreeSet<>();
 
     for (char c = 'b'; c < 'z'; c++) {
       splits.add(new Text("phrase:" + c));

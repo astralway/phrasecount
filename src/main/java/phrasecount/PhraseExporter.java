@@ -11,7 +11,6 @@ import phrasecount.query.PhraseCountTable;
 /**
  * Glue code to convert {@link Counts} objects from the export queue to Mutations to write to Accumulo.
  */
-
 public class PhraseExporter extends AccumuloExporter<String, Counts> {
   @Override
   protected List<Mutation> convert(String phrase, long seq, Counts pc) {

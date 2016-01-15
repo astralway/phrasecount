@@ -98,9 +98,7 @@ public class PhraseCountTable implements Iterable<PhraseAndCounts> {
       scanner.fetchColumn(new Text(STAT_CF), new Text(TOTAL_PC_CQ));
       scanner.fetchColumn(new Text(STAT_CF), new Text(DOC_PC_CQ));
 
-      Iterator<PhraseAndCounts> accumuloIter =
-          Iterators.transform(new RowIterator(scanner), new RowTransform());
-      return accumuloIter;
+      return Iterators.transform(new RowIterator(scanner), new RowTransform());
     } catch (RuntimeException e) {
       throw e;
     } catch (Exception e) {

@@ -42,7 +42,7 @@ public class Document {
   public Map<String, Integer> getPhrases() {
     String[] tokens = content.toLowerCase().split("[^\\p{Alnum}]+");
 
-    Map<String, Integer> phrases = new HashMap<String, Integer>();
+    Map<String, Integer> phrases = new HashMap<>();
     for (int i = 3; i < tokens.length; i++) {
       String phrase = tokens[i - 3] + " " + tokens[i - 2] + " " + tokens[i - 1] + " " + tokens[i];
       Integer old = phrases.put(phrase, 1);

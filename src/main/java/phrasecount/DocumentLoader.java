@@ -12,10 +12,9 @@ import static phrasecount.Constants.INDEX_CHECK_COL;
 import static phrasecount.Constants.TYPEL;
 
 /**
- * Executes document load transactions which dedupe and reference count documents. IF needed, the
+ * Executes document load transactions which dedupe and reference count documents. If needed, the
  * observer that updates phrase counts is triggered.
  */
-
 public class DocumentLoader implements Loader {
 
   private Document document;
@@ -27,10 +26,9 @@ public class DocumentLoader implements Loader {
   @Override
   public void load(TransactionBase tx, Context context) throws Exception {
 
-    // TODO need a strategy for dealing w/ large documents. If a worker processes many large
-    // documents concurrently it could cause memory exhaustion. . Could
-    // large documents up into pieces, however not sure if the example should be complicated w/
-    // this.
+    // TODO Need a strategy for dealing w/ large documents. If a worker processes many large
+    // documents concurrently, it could cause memory exhaustion. Could break up large documents
+    // into pieces, However, not sure if the example should be complicated with this.
 
     TypedTransactionBase ttx = TYPEL.wrap(tx);
     String storedHash = ttx.get().row("uri:" + document.getURI()).col(DOC_HASH_COL).toString();
@@ -48,21 +46,22 @@ public class DocumentLoader implements Loader {
         setRefCount(ttx, document.getHash(), refCount, refCount + 1);
       }
 
-      if (storedHash != null)
+      if (storedHash != null) {
         decrementRefCount(ttx, refCount, storedHash);
+      }
     }
   }
 
   private void setRefCount(TypedTransactionBase tx, String hash, Integer prevRc, int rc) {
     tx.mutate().row("doc:" + hash).col(DOC_REF_COUNT_COL).set(rc);
 
-    if(rc == 0 || (rc == 1 && (prevRc == null || prevRc == 0))){
-      tx.mutate().row("doc:" + hash).col(INDEX_CHECK_COL).set(); // setting this triggers the DocumentObserver
+    if (rc == 0 || (rc == 1 && (prevRc == null || prevRc == 0))) {
+      // setting this triggers DocumentObserver
+      tx.mutate().row("doc:" + hash).col(INDEX_CHECK_COL).set();
     }
-
   }
 
-  private void decrementRefCount(TypedTransactionBase tx, Integer prevRc, String hash) throws Exception {
+  private void decrementRefCount(TypedTransactionBase tx, Integer prevRc, String hash) {
     int rc = tx.get().row("doc:" + hash).col(DOC_REF_COUNT_COL).toInteger();
     setRefCount(tx, hash, prevRc, rc - 1);
   }

@@ -49,7 +49,7 @@ Row        | Column          | Value      | Purpose
 \<phrase\> | stat:totalCount | \<count\>  | For a given phrase, the value is the total number of times that phrase occurred in all documents.
 \<phrase\> | stat:docCount   | \<count\>  | For a given phrase, the values is the number of documents in which that phrase occurred.
 
-[PhraseCountTable][14] encapsualtes all of the code for ineracting with this
+[PhraseCountTable][14] encapsulates all of the code for interacting with this
 external table.
 
 Code Overview

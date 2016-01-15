@@ -41,17 +41,18 @@ public class Application {
   /**
    * Sets Fluo configuration needed to run the phrase count application
    *
-   * @param fluoConfig
+   * @param fluoConfig FluoConfiguration
+   * @param opts Options
    */
   public static void configure(FluoConfiguration fluoConfig, Options opts) {
-    // set up an observer that watchs the reference counts of documents. When a document is
+    // set up an observer that watches the reference counts of documents. When a document is
     // referenced or dereferenced, it will add or subtract phrase counts from a collision free map.
     fluoConfig.addObserver(new ObserverConfiguration(DocumentObserver.class.getName()));
 
-    //configure which KryoFactory recipes should use
+    // configure which KryoFactory recipes should use
     KryoSimplerSerializer.setKryoFactory(fluoConfig, PcKryoFactory.class);
 
-    // set up a collion free map to combine phrase counts
+    // set up a collision free map to combine phrase counts
     CollisionFreeMap.configure(fluoConfig,
         new CollisionFreeMap.Options(PCM_ID, PhraseMap.PcmCombiner.class,
             PhraseMap.PcmUpdateObserver.class, String.class, Counts.class,

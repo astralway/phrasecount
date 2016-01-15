@@ -20,7 +20,6 @@ import org.apache.accumulo.minicluster.ServerType;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import phrasecount.Application;
 
-
 public class Mini {
 
   static class Parameters {
@@ -56,13 +55,12 @@ public class Mini {
       System.exit(-1);
     }
 
-    MiniAccumuloConfig cfg =
-        new MiniAccumuloConfig(new File(params.args.get(0)), new String("secret"));
+    MiniAccumuloConfig cfg = new MiniAccumuloConfig(new File(params.args.get(0)), "secret");
     cfg.setZooKeeperPort(params.zookeeperPort);
     cfg.setNumTservers(params.tabletServers);
     if (params.moreMemory) {
       cfg.setMemory(ServerType.TABLET_SERVER, 2, MemoryUnit.GIGABYTE);
-      Map<String, String> site = new HashMap<String, String>();
+      Map<String, String> site = new HashMap<>();
       site.put(Property.TSERV_DATACACHE_SIZE.getKey(), "768M");
       site.put(Property.TSERV_INDEXCACHE_SIZE.getKey(), "256M");
       cfg.setSiteConfig(site);
