@@ -8,7 +8,7 @@ if [ "$#" -ne 1 ]; then
   exit 
 fi
 
-#set the following to a directory containg text files
+#set the following to a directory containing text files
 TXT_DIR=$1
 if [ ! -d $TXT_DIR ]; then
   echo "Document directory $TXT_DIR does not exist" 

@@ -5,6 +5,7 @@ import io.fluo.api.types.StringEncoder;
 import io.fluo.api.types.TypeLayer;
 
 public class Constants {
+
   // set the encoder to use in once place
   public static final TypeLayer TYPEL = new TypeLayer(new StringEncoder());
 

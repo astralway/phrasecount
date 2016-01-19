@@ -20,7 +20,6 @@ import static phrasecount.Constants.EXPORT_QUEUE_ID;
 /**
  * This class contains all of the code related to the {@link CollisionFreeMap} that keeps track of phrase counts.
  */
-
 public class PhraseMap {
 
   /**
@@ -45,7 +44,6 @@ public class PhraseMap {
    * phrase count. Updates are placed an Accumulo export queue to be exported to the table storing
    * phrase counts for query.
    */
-
   public static class PcmUpdateObserver extends UpdateObserver<String, Counts> {
 
     private ExportQueue<String, Counts> pcEq;
@@ -61,7 +59,7 @@ public class PhraseMap {
           new Function<Update<String, Counts>, Export<String, Counts>>() {
             @Override
             public Export<String, Counts> apply(Update<String, Counts> update) {
-              return new Export<String, Counts>(update.getKey(), update.getNewValue().get());
+              return new Export<>(update.getKey(), update.getNewValue().get());
             }
           });
 

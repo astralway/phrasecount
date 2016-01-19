@@ -24,6 +24,7 @@ public class Setup {
     try {
       conn.tableOperations().delete(exportTable);
     } catch (TableNotFoundException e) {
+      // ignore if table not found
     }
 
     conn.tableOperations().create(exportTable);

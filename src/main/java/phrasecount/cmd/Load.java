@@ -28,15 +28,19 @@ public class Load {
         LoaderExecutor le = fluoClient.newLoaderExecutor()) {
       File[] files = new File(args[1]).listFiles();
 
-      for (File txtFile : files) {
-        if (txtFile.getName().endsWith(".txt")) {
-          String uri = txtFile.toURI().toString();
-          String content = Files.toString(txtFile, Charsets.UTF_8);
+      if (files == null) {
+        System.out.println("Text file dir does not exist: " + args[0]);
+      } else {
+        for (File txtFile : files) {
+          if (txtFile.getName().endsWith(".txt")) {
+            String uri = txtFile.toURI().toString();
+            String content = Files.toString(txtFile, Charsets.UTF_8);
 
-          System.out.println("Processing : " + txtFile.toURI());
-          le.execute(new DocumentLoader(new Document(uri, content)));
-        } else {
-          System.out.println("Ignoring : " + txtFile.toURI());
+            System.out.println("Processing : " + txtFile.toURI());
+            le.execute(new DocumentLoader(new Document(uri, content)));
+          } else {
+            System.out.println("Ignoring : " + txtFile.toURI());
+          }
         }
       }
     }
@@ -44,5 +48,4 @@ public class Load {
     // TODO figure what threads are hanging around
     System.exit(0);
   }
-
 }

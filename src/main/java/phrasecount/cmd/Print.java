@@ -53,7 +53,7 @@ public class Print {
     System.exit(0);
   }
 
-  private static int count(Snapshot snap, String prefix, Column col) throws Exception {
+  private static int count(Snapshot snap, String prefix, Column col) {
     ScannerConfiguration scanConfig = new ScannerConfiguration();
     scanConfig.setSpan(Span.prefix(prefix));
     scanConfig.fetchColumn(col.getFamily(), col.getQualifier());
