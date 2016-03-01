@@ -144,7 +144,7 @@ production environment.
 
   * [run.sh] (bin/run.sh) : Runs this example with YARN using the Fluo tar
     distribution.  Running in this way requires setting up Hadoop, Zookeeper,
-    and Accumulo instances separately.  The [fluo-dev][8] and [fluo-deploy][9]
+    and Accumulo instances separately.  The [fluo-dev][8] and [Zetten][9]
     projects were created to ease setting up these external dependencies.
 
 Generating data
@@ -166,7 +166,7 @@ elinks -dump 1 -no-numbering -no-references http://zookeeper.apache.org > data/z
 [5]: src/main/java/phrasecount/PhraseExporter.java
 [7]: src/test/resources/log4j.properties
 [8]: https://github.com/fluo-io/fluo-dev
-[9]: https://github.com/fluo-io/fluo-deploy
+[9]: https://github.com/fluo-io/zetten
 [10]: src/main/java/phrasecount/Application.java
 [11]: https://github.com/fluo-io/fluo-recipes
 [12]: src/main/java/phrasecount/cmd/Mini.java

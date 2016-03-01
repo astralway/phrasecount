@@ -21,7 +21,7 @@ if [ -z "$FLUO_HOME" ]; then
   exit 1
 fi
 
-#Set application name.  $FLUO_APP_NAME is set by fluo-dev and fluo-deploy
+#Set application name.  $FLUO_APP_NAME is set by fluo-dev and zetten
 APP=${FLUO_APP_NAME:-phrasecount}
 
 #derived variables
