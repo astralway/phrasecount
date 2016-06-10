@@ -1,19 +1,28 @@
 package phrasecount;
 
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
-import io.fluo.recipes.accumulo.export.AccumuloExporter;
 import org.apache.accumulo.core.data.Mutation;
+import org.apache.fluo.recipes.accumulo.export.AccumuloExport;
 import phrasecount.pojos.Counts;
 import phrasecount.query.PhraseCountTable;
 
 /**
  * Glue code to convert {@link Counts} objects from the export queue to Mutations to write to Accumulo.
  */
-public class PhraseExporter extends AccumuloExporter<String, Counts> {
+public class PhraseExport implements AccumuloExport<String> {
+
+  private Counts pc;
+
+  public PhraseExport(){}
+
+  public PhraseExport(Counts pc){
+    this.pc = pc;
+  }
+
   @Override
-  protected List<Mutation> convert(String phrase, long seq, Counts pc) {
+  public Collection<Mutation> toMutations(String phrase, long seq) {
     return Collections.singletonList(PhraseCountTable.createMutation(phrase, seq, pc));
   }
 }

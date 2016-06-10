@@ -1,8 +1,8 @@
 package phrasecount;
 
-import io.fluo.api.client.Loader;
-import io.fluo.api.client.TransactionBase;
-import io.fluo.api.types.TypedTransactionBase;
+import org.apache.fluo.api.client.Loader;
+import org.apache.fluo.api.client.TransactionBase;
+import org.apache.fluo.api.types.TypedTransactionBase;
 import phrasecount.pojos.Document;
 
 import static phrasecount.Constants.DOC_CONTENT_COL;

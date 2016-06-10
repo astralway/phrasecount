@@ -1,8 +1,8 @@
 package phrasecount;
 
-import io.fluo.api.data.Column;
-import io.fluo.api.types.StringEncoder;
-import io.fluo.api.types.TypeLayer;
+import org.apache.fluo.api.data.Column;
+import org.apache.fluo.api.types.StringEncoder;
+import org.apache.fluo.api.types.TypeLayer;
 
 public class Constants {
 

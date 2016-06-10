@@ -4,12 +4,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import io.fluo.api.client.TransactionBase;
-import io.fluo.api.data.Bytes;
-import io.fluo.api.data.Column;
-import io.fluo.api.observer.AbstractObserver;
-import io.fluo.api.types.TypedTransactionBase;
-import io.fluo.recipes.map.CollisionFreeMap;
+import org.apache.fluo.api.client.TransactionBase;
+import org.apache.fluo.api.data.Bytes;
+import org.apache.fluo.api.data.Column;
+import org.apache.fluo.api.observer.AbstractObserver;
+import org.apache.fluo.api.types.TypedTransactionBase;
+import org.apache.fluo.recipes.map.CollisionFreeMap;
 import phrasecount.pojos.Counts;
 import phrasecount.pojos.Document;
 

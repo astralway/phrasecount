@@ -4,10 +4,10 @@ import java.io.File;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
-import io.fluo.api.client.FluoClient;
-import io.fluo.api.client.FluoFactory;
-import io.fluo.api.client.LoaderExecutor;
-import io.fluo.api.config.FluoConfiguration;
+import org.apache.fluo.api.client.FluoClient;
+import org.apache.fluo.api.client.FluoFactory;
+import org.apache.fluo.api.client.LoaderExecutor;
+import org.apache.fluo.api.config.FluoConfiguration;
 import phrasecount.DocumentLoader;
 import phrasecount.pojos.Document;
 

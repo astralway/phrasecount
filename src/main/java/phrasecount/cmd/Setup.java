@@ -2,12 +2,12 @@ package phrasecount.cmd;
 
 import java.io.File;
 
-import io.fluo.api.config.FluoConfiguration;
 import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.client.ZooKeeperInstance;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.fluo.api.config.FluoConfiguration;
 import phrasecount.Application;
 import phrasecount.Application.Options;
 

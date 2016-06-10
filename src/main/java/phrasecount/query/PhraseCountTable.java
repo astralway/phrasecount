@@ -4,7 +4,6 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 
 import com.google.common.collect.Iterators;
-import io.fluo.api.config.FluoConfiguration;
 import org.apache.accumulo.core.client.ClientConfiguration;
 import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.RowIterator;
@@ -16,6 +15,7 @@ import org.apache.accumulo.core.data.Mutation;
 import org.apache.accumulo.core.data.Range;
 import org.apache.accumulo.core.data.Value;
 import org.apache.accumulo.core.security.Authorizations;
+import org.apache.fluo.api.config.FluoConfiguration;
 import org.apache.hadoop.io.Text;
 import phrasecount.pojos.Counts;
 import phrasecount.pojos.PhraseAndCounts;
