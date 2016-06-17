@@ -34,7 +34,7 @@
         <version>2.10</version>
         <configuration>
           <!--define the specific dependencies to copy into the Fluo application dir-->
-          <includeArtifactIds>fluo-recipes-core,fluo-recipes-accumulo,kryo,minlog,reflectasm,objenesis</includeArtifactIds>
+          <includeArtifactIds>fluo-recipes-core,fluo-recipes-accumulo,fluo-recipes-kryo,kryo,minlog,reflectasm,objenesis</includeArtifactIds>
         </configuration>
       </plugin>
     </plugins>
