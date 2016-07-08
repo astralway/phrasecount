@@ -3,6 +3,9 @@
 BIN_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 PC_HOME=$( cd "$( dirname "$BIN_DIR" )" && pwd )
 
+# stop if any command fails
+set -e
+
 if [ "$#" -ne 1 ]; then
   echo "Usage : $0 <TXT FILES DIR>"
   exit 
@@ -49,7 +52,7 @@ $PC_HOME/bin/copy-jars.sh $FLUO_HOME $PC_HOME
 $FLUO_HOME/bin/fluo exec $APP phrasecount.cmd.Setup $APP_PROPS pcExport >> $APP_PROPS
 
 $FLUO_HOME/bin/fluo init $APP -f
-$FLUO_HOME/bin/fluo exec $APP io.fluo.recipes.accumulo.cmds.OptimizeTable
+$FLUO_HOME/bin/fluo exec $APP org.apache.fluo.recipes.accumulo.cmds.OptimizeTable
 $FLUO_HOME/bin/fluo start $APP
 $FLUO_HOME/bin/fluo info $APP
 
@@ -60,7 +63,7 @@ $FLUO_HOME/bin/fluo exec $APP phrasecount.cmd.Load $APP_PROPS $TXT_DIR
 $FLUO_HOME/bin/fluo wait $APP
 
 #print phrase counts
-$FLUO_HOME/bin/fluo exec $APP phrasecount.cmd.Print $APP_PROPS pcExport
+$FLUO_HOME/bin/fluo exec $APP phrasecount.cmd.Print $APP_PROPS pcExport | tail
 
 $FLUO_HOME/bin/fluo stop $APP
 

@@ -1,12 +1,13 @@
 package phrasecount;
 
-import io.fluo.api.config.FluoConfiguration;
-import io.fluo.api.config.ObserverConfiguration;
-import io.fluo.recipes.accumulo.export.AccumuloExporter;
-import io.fluo.recipes.accumulo.export.TableInfo;
-import io.fluo.recipes.export.ExportQueue;
-import io.fluo.recipes.map.CollisionFreeMap;
-import io.fluo.recipes.serialization.KryoSimplerSerializer;
+import org.apache.fluo.api.config.FluoConfiguration;
+import org.apache.fluo.api.config.ObserverConfiguration;
+import org.apache.fluo.recipes.accumulo.export.AccumuloExport;
+import org.apache.fluo.recipes.accumulo.export.AccumuloExporter;
+import org.apache.fluo.recipes.accumulo.export.TableInfo;
+import org.apache.fluo.recipes.export.ExportQueue;
+import org.apache.fluo.recipes.kryo.KryoSimplerSerializer;
+import org.apache.fluo.recipes.map.CollisionFreeMap;
 import phrasecount.pojos.Counts;
 import phrasecount.pojos.PcKryoFactory;
 
@@ -59,9 +60,8 @@ public class Application {
             opts.phraseCountMapBuckets));
 
     // setup an export queue to to send phrase count updates to an Accumulo table
-    ExportQueue.configure(fluoConfig, new ExportQueue.Options(EXPORT_QUEUE_ID, PhraseExporter.class,
-        String.class, Counts.class, opts.exportQueueBuckets));
-    AccumuloExporter.setExportTableInfo(fluoConfig.getAppConfiguration(), EXPORT_QUEUE_ID,
+    ExportQueue.configure(fluoConfig, new ExportQueue.Options(EXPORT_QUEUE_ID, AccumuloExporter.class.getName(), String.class.getName(), AccumuloExport.class.getName(), opts.exportQueueBuckets));
+    AccumuloExporter.setExportTableInfo(fluoConfig, EXPORT_QUEUE_ID,
         new TableInfo(opts.instance, opts.zookeepers, opts.user, opts.password, opts.exportTable));
   }
 }

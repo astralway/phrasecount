@@ -8,16 +8,15 @@ import java.util.Map;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
-import io.fluo.api.client.FluoAdmin.InitOpts;
-import io.fluo.api.client.FluoFactory;
-import io.fluo.api.config.FluoConfiguration;
-import io.fluo.api.mini.MiniFluo;
 import org.apache.accumulo.core.conf.Property;
 import org.apache.accumulo.minicluster.MemoryUnit;
 import org.apache.accumulo.minicluster.MiniAccumuloCluster;
 import org.apache.accumulo.minicluster.MiniAccumuloConfig;
 import org.apache.accumulo.minicluster.ServerType;
-import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.fluo.api.client.FluoAdmin.InitOpts;
+import org.apache.fluo.api.client.FluoFactory;
+import org.apache.fluo.api.config.FluoConfiguration;
+import org.apache.fluo.api.mini.MiniFluo;
 import phrasecount.Application;
 
 public class Mini {
@@ -90,10 +89,7 @@ public class Mini {
 
     MiniFluo miniFluo = FluoFactory.newMiniFluo(fluoConfig);
 
-    PropertiesConfiguration propsConfig = new PropertiesConfiguration();
-    propsConfig.copy(miniFluo.getClientConfiguration());
-
-    propsConfig.save(params.args.get(1));
+    miniFluo.getClientConfiguration().save(new File(params.args.get(1)));
 
     System.out.println();
     System.out.println("Wrote : " + params.args.get(1));

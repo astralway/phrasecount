@@ -2,7 +2,7 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>io.fluo</groupId>
+  <groupId>org.apache.fluo</groupId>
   <artifactId>phrasecount</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
@@ -13,8 +13,8 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <accumulo.version>1.6.1</accumulo.version>
-    <fluo.version>1.0.0-beta-2</fluo.version>
-    <fluo-recipes.version>1.0.0-beta-1</fluo-recipes.version>
+    <fluo.version>1.0.0-beta-3-SNAPSHOT</fluo.version>
+    <fluo-recipes.version>1.0.0-beta-3-SNAPSHOT</fluo-recipes.version>
   </properties>
 
   <build>
@@ -34,7 +34,7 @@
         <version>2.10</version>
         <configuration>
           <!--define the specific dependencies to copy into the Fluo application dir-->
-          <includeArtifactIds>fluo-recipes-core,fluo-recipes-accumulo,kryo,minlog,reflectasm,objenesis</includeArtifactIds>
+          <includeArtifactIds>fluo-recipes-core,fluo-recipes-accumulo,fluo-recipes-kryo,kryo,minlog,reflectasm,objenesis</includeArtifactIds>
         </configuration>
       </plugin>
     </plugins>
@@ -53,24 +53,29 @@
       <version>1.32</version>
     </dependency>
     <dependency>
-      <groupId>io.fluo</groupId>
+      <groupId>org.apache.fluo</groupId>
       <artifactId>fluo-api</artifactId>
       <version>${fluo.version}</version>
     </dependency>
     <dependency>
-      <groupId>io.fluo</groupId>
+      <groupId>org.apache.fluo</groupId>
       <artifactId>fluo-core</artifactId>
       <version>${fluo.version}</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
-      <groupId>io.fluo</groupId>
+      <groupId>org.apache.fluo</groupId>
       <artifactId>fluo-recipes-core</artifactId>
       <version>${fluo-recipes.version}</version>
     </dependency>
     <dependency>
-      <groupId>io.fluo</groupId>
+      <groupId>org.apache.fluo</groupId>
       <artifactId>fluo-recipes-accumulo</artifactId>
+      <version>${fluo-recipes.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.fluo</groupId>
+      <artifactId>fluo-recipes-kryo</artifactId>
       <version>${fluo-recipes.version}</version>
     </dependency>
 
@@ -80,7 +85,7 @@
       <version>${accumulo.version}</version>
     </dependency>
     <dependency>
-      <groupId>io.fluo</groupId>
+      <groupId>org.apache.fluo</groupId>
       <artifactId>fluo-mini</artifactId>
       <version>${fluo.version}</version>
       <scope>test</scope>

@@ -1,18 +1,18 @@
 package phrasecount;
 
 import java.util.Iterator;
+import java.util.Optional;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.collect.Iterators;
-import io.fluo.api.client.TransactionBase;
-import io.fluo.api.observer.Observer.Context;
-import io.fluo.recipes.export.Export;
-import io.fluo.recipes.export.ExportQueue;
-import io.fluo.recipes.map.CollisionFreeMap;
-import io.fluo.recipes.map.Combiner;
-import io.fluo.recipes.map.Update;
-import io.fluo.recipes.map.UpdateObserver;
+import org.apache.fluo.api.client.TransactionBase;
+import org.apache.fluo.api.observer.Observer.Context;
+import org.apache.fluo.recipes.export.Export;
+import org.apache.fluo.recipes.export.ExportQueue;
+import org.apache.fluo.recipes.map.CollisionFreeMap;
+import org.apache.fluo.recipes.map.Combiner;
+import org.apache.fluo.recipes.map.Update;
+import org.apache.fluo.recipes.map.UpdateObserver;
 import phrasecount.pojos.Counts;
 
 import static phrasecount.Constants.EXPORT_QUEUE_ID;
@@ -46,7 +46,7 @@ public class PhraseMap {
    */
   public static class PcmUpdateObserver extends UpdateObserver<String, Counts> {
 
-    private ExportQueue<String, Counts> pcEq;
+    private ExportQueue<String, PhraseExport> pcEq;
 
     @Override
     public void init(String mapId, Context observerContext) throws Exception {
@@ -55,11 +55,11 @@ public class PhraseMap {
 
     @Override
     public void updatingValues(TransactionBase tx, Iterator<Update<String, Counts>> updates) {
-      Iterator<Export<String, Counts>> exports = Iterators.transform(updates,
-          new Function<Update<String, Counts>, Export<String, Counts>>() {
+      Iterator<Export<String, PhraseExport>> exports = Iterators.transform(updates,
+          new Function<Update<String, Counts>, Export<String, PhraseExport>>() {
             @Override
-            public Export<String, Counts> apply(Update<String, Counts> update) {
-              return new Export<>(update.getKey(), update.getNewValue().get());
+            public Export<String, PhraseExport> apply(Update<String, Counts> update) {
+              return new Export<>(update.getKey(), new PhraseExport(update.getNewValue().get()));
             }
           });
 

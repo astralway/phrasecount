@@ -4,10 +4,10 @@ import java.io.File;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import io.fluo.api.config.FluoConfiguration;
 import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.ZooKeeperInstance;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
+import org.apache.fluo.api.config.FluoConfiguration;
 import org.apache.hadoop.io.Text;
 
 /**
