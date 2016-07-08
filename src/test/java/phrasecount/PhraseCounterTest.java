@@ -13,7 +13,7 @@ import org.apache.fluo.api.client.FluoFactory;
 import org.apache.fluo.api.client.LoaderExecutor;
 import org.apache.fluo.api.config.FluoConfiguration;
 import org.apache.fluo.api.mini.MiniFluo;
-import org.apache.fluo.api.types.TypedSnapshot;
+import org.apache.fluo.recipes.types.TypedSnapshot;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;

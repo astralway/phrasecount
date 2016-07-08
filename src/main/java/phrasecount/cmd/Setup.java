@@ -6,7 +6,6 @@ import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.TableNotFoundException;
 import org.apache.accumulo.core.client.ZooKeeperInstance;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
-import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.fluo.api.config.FluoConfiguration;
 import phrasecount.Application;
 import phrasecount.Application.Options;
@@ -34,10 +33,6 @@ public class Setup {
 
     FluoConfiguration observerConfig = new FluoConfiguration();
     Application.configure(observerConfig, opts);
-
-    PropertiesConfiguration propsConfig = new PropertiesConfiguration();
-    propsConfig.setDelimiterParsingDisabled(true);
-    propsConfig.copy(observerConfig);
-    propsConfig.save(System.out);
+    observerConfig.save(System.out);
   }
 }

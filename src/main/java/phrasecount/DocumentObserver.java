@@ -8,8 +8,8 @@ import org.apache.fluo.api.client.TransactionBase;
 import org.apache.fluo.api.data.Bytes;
 import org.apache.fluo.api.data.Column;
 import org.apache.fluo.api.observer.AbstractObserver;
-import org.apache.fluo.api.types.TypedTransactionBase;
 import org.apache.fluo.recipes.map.CollisionFreeMap;
+import org.apache.fluo.recipes.types.TypedTransactionBase;
 import phrasecount.pojos.Counts;
 import phrasecount.pojos.Document;
 

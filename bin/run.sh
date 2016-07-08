@@ -3,6 +3,9 @@
 BIN_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 PC_HOME=$( cd "$( dirname "$BIN_DIR" )" && pwd )
 
+# stop if any command fails
+set -e
+
 if [ "$#" -ne 1 ]; then
   echo "Usage : $0 <TXT FILES DIR>"
   exit 
