@@ -1,18 +1,14 @@
 package phrasecount.cmd;
 
 import java.io.File;
-import java.util.Map.Entry;
 
+import com.google.common.collect.Iterables;
 import org.apache.fluo.api.client.FluoClient;
 import org.apache.fluo.api.client.FluoFactory;
 import org.apache.fluo.api.client.Snapshot;
 import org.apache.fluo.api.config.FluoConfiguration;
-import org.apache.fluo.api.config.ScannerConfiguration;
-import org.apache.fluo.api.data.Bytes;
 import org.apache.fluo.api.data.Column;
 import org.apache.fluo.api.data.Span;
-import org.apache.fluo.api.iterator.ColumnIterator;
-import org.apache.fluo.api.iterator.RowIterator;
 import phrasecount.Constants;
 import phrasecount.pojos.PhraseAndCounts;
 import phrasecount.query.PhraseCountTable;
@@ -54,19 +50,6 @@ public class Print {
   }
 
   private static int count(Snapshot snap, String prefix, Column col) {
-    ScannerConfiguration scanConfig = new ScannerConfiguration();
-    scanConfig.setSpan(Span.prefix(prefix));
-    scanConfig.fetchColumn(col.getFamily(), col.getQualifier());
-
-    int count = 0;
-
-    RowIterator riter = snap.get(scanConfig);
-    while (riter.hasNext()) {
-      @SuppressWarnings("unused")
-      Entry<Bytes, ColumnIterator> rowEntry = riter.next();
-      count++;
-    }
-
-    return count;
+    return Iterables.size(snap.scanner().over(Span.prefix(prefix)).fetch(col).byRow().build());
   }
 }

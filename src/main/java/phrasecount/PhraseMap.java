@@ -7,12 +7,12 @@ import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
 import org.apache.fluo.api.client.TransactionBase;
 import org.apache.fluo.api.observer.Observer.Context;
-import org.apache.fluo.recipes.export.Export;
-import org.apache.fluo.recipes.export.ExportQueue;
-import org.apache.fluo.recipes.map.CollisionFreeMap;
-import org.apache.fluo.recipes.map.Combiner;
-import org.apache.fluo.recipes.map.Update;
-import org.apache.fluo.recipes.map.UpdateObserver;
+import org.apache.fluo.recipes.core.export.Export;
+import org.apache.fluo.recipes.core.export.ExportQueue;
+import org.apache.fluo.recipes.core.map.CollisionFreeMap;
+import org.apache.fluo.recipes.core.map.Combiner;
+import org.apache.fluo.recipes.core.map.Update;
+import org.apache.fluo.recipes.core.map.UpdateObserver;
 import phrasecount.pojos.Counts;
 
 import static phrasecount.Constants.EXPORT_QUEUE_ID;
