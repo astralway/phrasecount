@@ -1,8 +1,8 @@
 package phrasecount;
 
 import org.apache.fluo.api.data.Column;
-import org.apache.fluo.recipes.types.StringEncoder;
-import org.apache.fluo.recipes.types.TypeLayer;
+import org.apache.fluo.recipes.core.types.StringEncoder;
+import org.apache.fluo.recipes.core.types.TypeLayer;
 
 public class Constants {
 
