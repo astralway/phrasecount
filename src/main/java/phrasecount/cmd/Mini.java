@@ -13,7 +13,7 @@ import org.apache.accumulo.minicluster.MemoryUnit;
 import org.apache.accumulo.minicluster.MiniAccumuloCluster;
 import org.apache.accumulo.minicluster.MiniAccumuloConfig;
 import org.apache.accumulo.minicluster.ServerType;
-import org.apache.fluo.api.client.FluoAdmin.InitOpts;
+import org.apache.fluo.api.client.FluoAdmin.InitializationOptions;
 import org.apache.fluo.api.client.FluoFactory;
 import org.apache.fluo.api.config.FluoConfiguration;
 import org.apache.fluo.api.mini.MiniFluo;
@@ -85,7 +85,7 @@ public class Mini {
     Application.configure(fluoConfig, new Application.Options(17, 17, cluster.getInstanceName(),
         cluster.getZooKeepers(), "root", "secret", "pcExport"));
 
-    FluoFactory.newAdmin(fluoConfig).initialize(new InitOpts());
+    FluoFactory.newAdmin(fluoConfig).initialize(new InitializationOptions());
 
     MiniFluo miniFluo = FluoFactory.newMiniFluo(fluoConfig);
 

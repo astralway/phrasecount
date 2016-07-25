@@ -14,7 +14,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <accumulo.version>1.6.1</accumulo.version>
     <fluo.version>1.0.0-incubating-SNAPSHOT</fluo.version>
-    <fluo-recipes.version>1.0.0-beta-3-SNAPSHOT</fluo-recipes.version>
+    <fluo-recipes.version>1.0.0-incubating-SNAPSHOT</fluo-recipes.version>
   </properties>
 
   <build>

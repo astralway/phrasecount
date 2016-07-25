@@ -7,7 +7,7 @@ import org.apache.accumulo.core.client.Connector;
 import org.apache.accumulo.core.client.security.tokens.PasswordToken;
 import org.apache.accumulo.minicluster.MiniAccumuloCluster;
 import org.apache.accumulo.minicluster.MiniAccumuloConfig;
-import org.apache.fluo.api.client.FluoAdmin.InitOpts;
+import org.apache.fluo.api.client.FluoAdmin.InitializationOptions;
 import org.apache.fluo.api.client.FluoClient;
 import org.apache.fluo.api.client.FluoFactory;
 import org.apache.fluo.api.client.LoaderExecutor;
@@ -83,7 +83,7 @@ public class PhraseCounterTest {
         cluster.getZooKeepers(), "root", "secret", queryTable));
 
     FluoFactory.newAdmin(props)
-        .initialize(new InitOpts().setClearTable(true).setClearZookeeper(true));
+        .initialize(new InitializationOptions().setClearTable(true).setClearZookeeper(true));
 
     miniFluo = FluoFactory.newMiniFluo(props);
   }
