@@ -1,31 +1,26 @@
-Phrase Count
-============
+# Phrase Count
 
-[![Build Status](https://travis-ci.org/fluo-io/phrasecount.svg?branch=master)](https://travis-ci.org/fluo-io/phrasecount)
+[![Build Status](https://travis-ci.org/astralway/phrasecount.svg?branch=master)](https://travis-ci.org/astralway/phrasecount)
 
-An example application that computes phrase counts for unique documents using
-Fluo. Each unique document that is added causes phrase counts to be
-incremented. Unique documents have reference counts based on the number of
-locations that point to them.  When a unique document is no longer referenced
-by any location, then the phrase counts will be decremented appropriately.
+An example application that computes phrase counts for unique documents using Apache Fluo. Each
+unique document that is added causes phrase counts to be incremented. Unique documents have
+reference counts based on the number of locations that point to them. When a unique document is no
+longer referenced by any location, then the phrase counts will be decremented appropriately.
 
-After phrase counts are incremented, export transactions send phrase counts to
-an Accumulo table.  The purpose of exporting data is to make it available for
-query.  Percolator is not designed to support queries, because its transactions
-are designed for throughput and not responsiveness.
+After phrase counts are incremented, export transactions send phrase counts to an Accumulo table.
+The purpose of exporting data is to make it available for query. Percolator is not designed to
+support queries, because its transactions are designed for throughput and not responsiveness.
 
-This example uses the Collistion Free Map and Export Queue from 
-[Fluo Recipes][11].  A Collision Free Map is used to calculate phrase counts.
-An Export Queue is used to update the external Accumulo table in a fault
-tolerant manner.  Before using Fluo Recipes this example was quite complex.
-Switching to Fluo Recipes dramatically simplified this example.
+This example uses the Collision Free Map and Export Queue from [Apache Fluo Recipes][11]. A
+Collision Free Map is used to calculate phrase counts. An Export Queue is used to update the
+external Accumulo table in a fault tolerant manner. Before using Fluo Recipes, this example was
+quite complex. Switching to Fluo Recipes dramatically simplified this example.
 
-Schema
-------
+## Schema
 
 ### Fluo Table Schema
 
-This example uses the following schema for the table used by Fluo.
+This example uses the following schema for the table used by Apache Fluo.
   
 Row          | Column        | Value             | Purpose
 -------------|---------------|-------------------|---------------------------------------------------------------------
@@ -52,8 +47,7 @@ Row        | Column          | Value      | Purpose
 [PhraseCountTable][14] encapsulates all of the code for interacting with this
 external table.
 
-Code Overview
--------------
+## Code Overview
 
 Documents are loaded into the Fluo table by [DocumentLoader][1] which is
 executed by [Load][2].  [DocumentLoader][1] handles reference counting of
@@ -69,8 +63,7 @@ generate mutations to update the external Accumulo table.
 All observers and recipes are configured by code in [Application][10].  All
 observers are run by the Fluo worker processes when notifications trigger them.
 
-Building
---------
+## Building
 
 After cloning this repository, build with following command. 
  
@@ -78,8 +71,7 @@ After cloning this repository, build with following command.
 mvn package 
 ```
 
-Running via Maven
------------------
+## Running via Maven
 
 If you do not have Accumulo, Hadoop, Zookeeper, and Fluo setup, then you can
 start an MiniFluo instance with the [mini.sh](bin/mini.sh) script.  This script
@@ -133,8 +125,7 @@ Make sure to kill mini when finished testing.  The following command will kill i
 pkill -f phrasecount.cmd.Mini
 ```
 
-Deploying example
------------------
+## Deploying example
 
 The following script can run this example on a cluster using the Fluo
 distribution and serves as executable documentation for deployment.  The
@@ -144,11 +135,10 @@ production environment.
 
   * [run.sh] (bin/run.sh) : Runs this example with YARN using the Fluo tar
     distribution.  Running in this way requires setting up Hadoop, Zookeeper,
-    and Accumulo instances separately.  The [fluo-dev][8] and [Zetten][9]
+    and Accumulo instances separately.  The [Uno][8] and [Muchos][9]
     projects were created to ease setting up these external dependencies.
 
-Generating data
----------------
+## Generating data
 
 Need some data? Use `elinks` to generate text files from web pages.
 
@@ -165,10 +155,10 @@ elinks -dump 1 -no-numbering -no-references http://zookeeper.apache.org > data/z
 [4]: src/main/java/phrasecount/PhraseMap.java
 [5]: src/main/java/phrasecount/PhraseExporter.java
 [7]: src/test/resources/log4j.properties
-[8]: https://github.com/fluo-io/fluo-dev
-[9]: https://github.com/fluo-io/zetten
+[8]: https://github.com/astralway/uno
+[9]: https://github.com/astralway/muchos
 [10]: src/main/java/phrasecount/Application.java
-[11]: https://github.com/fluo-io/fluo-recipes
+[11]: https://github.com/apache/fluo-recipes
 [12]: src/main/java/phrasecount/cmd/Mini.java
 [13]: src/main/java/phrasecount/cmd/Print.java
 [14]: src/main/java/phrasecount/query/PhraseCountTable.java
