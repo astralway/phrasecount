@@ -2,19 +2,19 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.apache.fluo</groupId>
+  <groupId>io.github.astralway</groupId>
   <artifactId>phrasecount</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>phrasecount</name>
-  <url>https://github.com/fluo-io/phrasecount</url>
+  <url>https://github.com/astralway/phrasecount</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <accumulo.version>1.6.1</accumulo.version>
     <fluo.version>1.0.0-incubating-SNAPSHOT</fluo.version>
-    <fluo-recipes.version>1.0.0-beta-3-SNAPSHOT</fluo-recipes.version>
+    <fluo-recipes.version>1.0.0-incubating-SNAPSHOT</fluo-recipes.version>
   </properties>
 
   <build>
@@ -78,7 +78,6 @@
       <artifactId>fluo-recipes-kryo</artifactId>
       <version>${fluo-recipes.version}</version>
     </dependency>
-
     <dependency>
       <groupId>org.apache.accumulo</groupId>
       <artifactId>accumulo-core</artifactId>
