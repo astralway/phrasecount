@@ -1,10 +1,8 @@
 package phrasecount;
 
 import org.apache.fluo.api.config.FluoConfiguration;
-import org.apache.fluo.api.config.ObserverConfiguration;
-import org.apache.fluo.recipes.accumulo.export.AccumuloExport;
+import org.apache.fluo.api.config.ObserverSpecification;
 import org.apache.fluo.recipes.accumulo.export.AccumuloExporter;
-import org.apache.fluo.recipes.accumulo.export.TableInfo;
 import org.apache.fluo.recipes.core.export.ExportQueue;
 import org.apache.fluo.recipes.core.map.CollisionFreeMap;
 import org.apache.fluo.recipes.kryo.KryoSimplerSerializer;
@@ -48,7 +46,7 @@ public class Application {
   public static void configure(FluoConfiguration fluoConfig, Options opts) {
     // set up an observer that watches the reference counts of documents. When a document is
     // referenced or dereferenced, it will add or subtract phrase counts from a collision free map.
-    fluoConfig.addObserver(new ObserverConfiguration(DocumentObserver.class.getName()));
+    fluoConfig.addObserver(new ObserverSpecification(DocumentObserver.class.getName()));
 
     // configure which KryoFactory recipes should use
     KryoSimplerSerializer.setKryoFactory(fluoConfig, PcKryoFactory.class);
@@ -59,9 +57,15 @@ public class Application {
             PhraseMap.PcmUpdateObserver.class, String.class, Counts.class,
             opts.phraseCountMapBuckets));
 
-    // setup an export queue to to send phrase count updates to an Accumulo table
-    ExportQueue.configure(fluoConfig, new ExportQueue.Options(EXPORT_QUEUE_ID, AccumuloExporter.class.getName(), String.class.getName(), AccumuloExport.class.getName(), opts.exportQueueBuckets));
-    AccumuloExporter.setExportTableInfo(fluoConfig, EXPORT_QUEUE_ID,
-        new TableInfo(opts.instance, opts.zookeepers, opts.user, opts.password, opts.exportTable));
+    AccumuloExporter.Configuration accumuloConfig =
+        new AccumuloExporter.Configuration(opts.instance, opts.zookeepers, opts.user, opts.password,
+                                           opts.exportTable);
+
+    // setup an Accumulo export queue to to send phrase count updates to an Accumulo table
+    ExportQueue.Options exportQueueOpts =
+        new ExportQueue.Options(EXPORT_QUEUE_ID, PhraseExporter.class.getName(),
+                                String.class.getName(), Counts.class.getName(),
+                                opts.exportQueueBuckets).setExporterConfiguration(accumuloConfig);
+    ExportQueue.configure(fluoConfig, exportQueueOpts);
   }
 }

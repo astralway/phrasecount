@@ -20,11 +20,11 @@ public class Load {
       System.exit(-1);
     }
 
-    FluoConfiguration leprops = new FluoConfiguration(new File(args[0]));
-    leprops.setLoaderThreads(20);
-    leprops.setLoaderQueueSize(40);
+    FluoConfiguration config = new FluoConfiguration(new File(args[0]));
+    config.setLoaderThreads(20);
+    config.setLoaderQueueSize(40);
 
-    try (FluoClient fluoClient = FluoFactory.newClient(leprops);
+    try (FluoClient fluoClient = FluoFactory.newClient(config);
         LoaderExecutor le = fluoClient.newLoaderExecutor()) {
       File[] files = new File(args[1]).listFiles();
 
