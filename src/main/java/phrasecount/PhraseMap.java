@@ -3,7 +3,6 @@ package phrasecount;
 import java.util.Iterator;
 import java.util.Optional;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
 import org.apache.fluo.api.client.TransactionBase;
 import org.apache.fluo.api.observer.Observer.Context;
@@ -18,7 +17,8 @@ import phrasecount.pojos.Counts;
 import static phrasecount.Constants.EXPORT_QUEUE_ID;
 
 /**
- * This class contains all of the code related to the {@link CollisionFreeMap} that keeps track of phrase counts.
+ * This class contains all of the code related to the {@link CollisionFreeMap} that keeps track of
+ * phrase counts.
  */
 public class PhraseMap {
 
@@ -34,7 +34,6 @@ public class PhraseMap {
       while (updates.hasNext()) {
         sum = sum.add(updates.next());
       }
-
       return Optional.of(sum);
     }
   }
@@ -46,7 +45,7 @@ public class PhraseMap {
    */
   public static class PcmUpdateObserver extends UpdateObserver<String, Counts> {
 
-    private ExportQueue<String, PhraseExport> pcEq;
+    private ExportQueue<String, Counts> pcEq;
 
     @Override
     public void init(String mapId, Context observerContext) throws Exception {
@@ -55,14 +54,8 @@ public class PhraseMap {
 
     @Override
     public void updatingValues(TransactionBase tx, Iterator<Update<String, Counts>> updates) {
-      Iterator<Export<String, PhraseExport>> exports = Iterators.transform(updates,
-          new Function<Update<String, Counts>, Export<String, PhraseExport>>() {
-            @Override
-            public Export<String, PhraseExport> apply(Update<String, Counts> update) {
-              return new Export<>(update.getKey(), new PhraseExport(update.getNewValue().get()));
-            }
-          });
-
+      Iterator<Export<String, Counts>> exports =
+          Iterators.transform(updates, u -> new Export<>(u.getKey(), u.getNewValue().get()));
       pcEq.addAll(tx, exports);
     }
   }

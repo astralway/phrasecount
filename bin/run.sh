@@ -63,7 +63,7 @@ $FLUO_HOME/bin/fluo exec $APP phrasecount.cmd.Load $APP_PROPS $TXT_DIR
 $FLUO_HOME/bin/fluo wait $APP
 
 #print phrase counts
-$FLUO_HOME/bin/fluo exec $APP phrasecount.cmd.Print $APP_PROPS pcExport | tail
+$FLUO_HOME/bin/fluo exec $APP phrasecount.cmd.Print $APP_PROPS pcExport
 
 $FLUO_HOME/bin/fluo stop $APP
 

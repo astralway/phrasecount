@@ -22,7 +22,6 @@ import phrasecount.pojos.PhraseAndCounts;
 
 /**
  * All of the code for dealing with the Accumulo table that Fluo is exporting to
- *
  */
 public class PhraseCountTable implements Iterable<PhraseAndCounts> {
 
