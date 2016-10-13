@@ -1,7 +1,6 @@
 package phrasecount;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.util.function.Consumer;
 
 import org.apache.accumulo.core.data.Mutation;
 import org.apache.fluo.recipes.accumulo.export.AccumuloExporter;
@@ -16,10 +15,10 @@ import phrasecount.query.PhraseCountTable;
 public class PhraseExporter extends AccumuloExporter<String, Counts> {
 
   @Override
-  protected Collection<Mutation> translate(SequencedExport<String, Counts> export) {
+  protected void translate(SequencedExport<String, Counts> export, Consumer<Mutation> consumer) {
     String phrase = export.getKey();
     long seq = export.getSequence();
     Counts counts = export.getValue();
-    return Collections.singletonList(PhraseCountTable.createMutation(phrase, seq, counts));
+    consumer.accept(PhraseCountTable.createMutation(phrase, seq, counts));
   }
 }
