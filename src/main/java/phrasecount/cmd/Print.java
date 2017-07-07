@@ -3,6 +3,7 @@ package phrasecount.cmd;
 import java.io.File;
 
 import com.google.common.collect.Iterables;
+import org.apache.fluo.api.client.FluoAdmin;
 import org.apache.fluo.api.client.FluoClient;
 import org.apache.fluo.api.client.FluoFactory;
 import org.apache.fluo.api.client.Snapshot;
@@ -16,18 +17,22 @@ import phrasecount.query.PhraseCountTable;
 public class Print {
 
   public static void main(String[] args) throws Exception {
-    if (args.length != 2) {
+    if (args.length != 3) {
       System.err
-          .println("Usage : " + Print.class.getName() + " <fluo props file> <export table name>");
+          .println("Usage : " + Print.class.getName()
+                   + " <fluo conn props> <app name> <export table name>");
       System.exit(-1);
     }
 
     FluoConfiguration fluoConfig = new FluoConfiguration(new File(args[0]));
+    fluoConfig.setApplicationName(args[1]);
 
-    PhraseCountTable pcTable = new PhraseCountTable(fluoConfig, args[1]);
-    for (PhraseAndCounts phraseCount : pcTable) {
-      System.out.printf("%7d %7d '%s'\n", phraseCount.docPhraseCount, phraseCount.totalPhraseCount,
-          phraseCount.phrase);
+    try (FluoAdmin admin = FluoFactory.newAdmin(fluoConfig)) {
+      PhraseCountTable pcTable = new PhraseCountTable(admin.getSharedConfig(), args[2]);
+      for (PhraseAndCounts phraseCount : pcTable) {
+        System.out.printf("%7d %7d '%s'\n", phraseCount.docPhraseCount, phraseCount.totalPhraseCount,
+                          phraseCount.phrase);
+      }
     }
 
     try (FluoClient fluoClient = FluoFactory.newClient(fluoConfig);

@@ -3,6 +3,12 @@
 BIN_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 PC_HOME=$( cd "$( dirname "$BIN_DIR" )" && pwd )
 
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  export SED="sed -i .bak"
+else
+  export SED="sed -i"
+fi
+
 # stop if any command fails
 set -e
 
@@ -13,7 +19,7 @@ fi
 
 #set the following to a directory containing text files
 TXT_DIR=$1
-if [ ! -d $TXT_DIR ]; then
+if [ ! -d "$TXT_DIR" ]; then
   echo "Document directory $TXT_DIR does not exist" 
   exit 1
 fi
@@ -24,46 +30,45 @@ if [ -z "$FLUO_HOME" ]; then
   exit 1
 fi
 
-#Set application name.  $FLUO_APP_NAME is set by fluo-dev and zetten
-APP=${FLUO_APP_NAME:-phrasecount}
+fluo=$FLUO_HOME/bin/fluo
 
-#derived variables
-APP_PROPS=$FLUO_HOME/apps/$APP/conf/fluo.properties
+app=phrasecount
+app_props=$FLUO_HOME/conf/${app}.properties
+conn_props=$FLUO_HOME/conf/connection.properties
 
-if [ ! -f $FLUO_HOME/conf/fluo.properties ]; then
-  echo "Fluo is not configured, exiting."
-  exit 1
+if [ -f "$app_props" ]; then
+  echo "Restarting '$app' application.  Errors may be printed if it's not running..."
+  $FLUO_HOME/bin/fluo stop "$app" || true
+  rm "$app_props"
 fi
 
-#remove application if it exists
-if [ -d $FLUO_HOME/apps/$APP ]; then
-  echo "Restarting '$APP' application.  Errors may be printed if it's not running..."
-  $FLUO_HOME/bin/fluo kill $APP || true
-  rm -rf $FLUO_HOME/apps/$APP
-fi
+cp "$FLUO_HOME/conf/application.properties" "$app_props"
 
-#create new application dir
-$FLUO_HOME/bin/fluo new $APP
+app_lib=$PC_HOME/target/lib
+mkdir -p "$app_lib"
+(cd "$PC_HOME"; mvn package -DskipTests)
+cp "$PC_HOME/target/phrasecount-0.0.1-SNAPSHOT.jar" "$app_lib"
+(cd "$PC_HOME"; mvn dependency:copy-dependencies -DoutputDirectory="$app_lib")
 
-#copy phrasecount jars to Fluo application lib dir
-$PC_HOME/bin/copy-jars.sh $FLUO_HOME $PC_HOME
+$SED "s#fluo.connection.application.name=[^ ]*#fluo.connection.application.name=${app}#" "$app_props"
+$SED "s#^.*fluo.observer.init.dir=[^ ]*#fluo.observer.init.dir=${app_lib}#" "$app_props"
 
-#Create export table and output Fluo configuration
-$FLUO_HOME/bin/fluo exec $APP phrasecount.cmd.Setup $APP_PROPS pcExport >> $APP_PROPS
+# Create export table and output Fluo configuration
+java -cp "$app_lib/*:$("$fluo" classpath)" phrasecount.cmd.Setup "$conn_props" "$app_props" pcExport >> $app_props
 
-$FLUO_HOME/bin/fluo init $APP -f
-$FLUO_HOME/bin/fluo exec $APP org.apache.fluo.recipes.accumulo.cmds.OptimizeTable
-$FLUO_HOME/bin/fluo start $APP
-$FLUO_HOME/bin/fluo info $APP
+$FLUO_HOME/bin/fluo setup $app_props -f
+$FLUO_HOME/bin/fluo exec $app org.apache.fluo.recipes.accumulo.cmds.OptimizeTable
+$FLUO_HOME/bin/fluo oracle $app
+$FLUO_HOME/bin/fluo worker $app
 
-#Load data
-$FLUO_HOME/bin/fluo exec $APP phrasecount.cmd.Load $APP_PROPS $TXT_DIR
+# Load data
+$FLUO_HOME/bin/fluo exec $app phrasecount.cmd.Load $conn_props $app $TXT_DIR
 
-#wait for all notifications to be processed.
-$FLUO_HOME/bin/fluo wait $APP
+# Wait for all notifications to be processed.
+$FLUO_HOME/bin/fluo wait $app
 
-#print phrase counts
-$FLUO_HOME/bin/fluo exec $APP phrasecount.cmd.Print $APP_PROPS pcExport
+# Print phrase counts
+$FLUO_HOME/bin/fluo exec $app phrasecount.cmd.Print $conn_props $app pcExport
 
-$FLUO_HOME/bin/fluo stop $APP
+$FLUO_HOME/bin/fluo stop $app
 

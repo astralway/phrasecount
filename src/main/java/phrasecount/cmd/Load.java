@@ -15,21 +15,22 @@ public class Load {
 
   public static void main(String[] args) throws Exception {
 
-    if (args.length != 2) {
-      System.err.println("Usage : " + Load.class.getName() + " <fluo props file> <txt file dir>");
+    if (args.length != 3) {
+      System.err.println("Usage : " + Load.class.getName() + " <fluo conn props> <app name> <txt file dir>");
       System.exit(-1);
     }
 
     FluoConfiguration config = new FluoConfiguration(new File(args[0]));
+    config.setApplicationName(args[1]);
     config.setLoaderThreads(20);
     config.setLoaderQueueSize(40);
 
     try (FluoClient fluoClient = FluoFactory.newClient(config);
         LoaderExecutor le = fluoClient.newLoaderExecutor()) {
-      File[] files = new File(args[1]).listFiles();
+      File[] files = new File(args[2]).listFiles();
 
       if (files == null) {
-        System.out.println("Text file dir does not exist: " + args[0]);
+        System.out.println("Text file dir does not exist: " + args[2]);
       } else {
         for (File txtFile : files) {
           if (txtFile.getName().endsWith(".txt")) {

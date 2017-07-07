@@ -108,7 +108,7 @@ which prints out phrase counts.  Try modifying a document you added and running
 the load command again, you should eventually see the phrase counts change.
 
 ```bash
-./bin/print.sh fluo.properties pcExport
+./bin/print.sh connection.properties phrasecount pcExport
 ```
 
 The command will print out the number of unique documents and the number

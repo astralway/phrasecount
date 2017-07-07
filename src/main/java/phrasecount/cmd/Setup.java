@@ -13,9 +13,11 @@ import phrasecount.Application.Options;
 public class Setup {
 
   public static void main(String[] args) throws Exception {
-    FluoConfiguration config = new FluoConfiguration(new File(args[0]));
 
-    String exportTable = args[1];
+    FluoConfiguration config = new FluoConfiguration(new File(args[0]));
+    config.load(new File(args[1]));
+
+    String exportTable = args[2];
 
     Connector conn =
         new ZooKeeperInstance(config.getAccumuloInstance(), config.getAccumuloZookeepers())
