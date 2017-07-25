@@ -56,7 +56,7 @@ $SED "s#^.*fluo.observer.init.dir=[^ ]*#fluo.observer.init.dir=${app_lib}#" "$ap
 # Create export table and output Fluo configuration
 java -cp "$app_lib/*:$("$fluo" classpath)" phrasecount.cmd.Setup "$conn_props" "$app_props" pcExport >> $app_props
 
-$FLUO_HOME/bin/fluo setup $app_props -f
+$FLUO_HOME/bin/fluo init $app_props -f
 $FLUO_HOME/bin/fluo exec $app org.apache.fluo.recipes.accumulo.cmds.OptimizeTable
 $FLUO_HOME/bin/fluo oracle $app
 $FLUO_HOME/bin/fluo worker $app
