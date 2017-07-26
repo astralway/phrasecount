@@ -34,7 +34,7 @@ fluo=$FLUO_HOME/bin/fluo
 
 app=phrasecount
 app_props=$FLUO_HOME/conf/${app}.properties
-conn_props=$FLUO_HOME/conf/connection.properties
+conn_props=$FLUO_HOME/conf/fluo-conn.properties
 
 if [ -f "$app_props" ]; then
   echo "Restarting '$app' application.  Errors may be printed if it's not running..."
@@ -42,7 +42,7 @@ if [ -f "$app_props" ]; then
   rm "$app_props"
 fi
 
-cp "$FLUO_HOME/conf/application.properties" "$app_props"
+cp "$FLUO_HOME/conf/fluo-app.properties" "$app_props"
 
 app_lib=$PC_HOME/target/lib
 mkdir -p "$app_lib"
