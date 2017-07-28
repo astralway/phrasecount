@@ -54,12 +54,11 @@ public class PhraseCountTable implements Iterable<PhraseAndCounts> {
   private Connector conn;
   private String table;
 
-  public PhraseCountTable(FluoConfiguration fluoConfig, String table) throws Exception {
+  public PhraseCountTable(String accumuloZookeepers, String accumuloInstance, String accumuloUser,
+                          String accumuloPassword, String table) throws Exception {
     ZooKeeperInstance zki = new ZooKeeperInstance(
-        new ClientConfiguration().withZkHosts(fluoConfig.getAccumuloZookeepers())
-            .withInstance(fluoConfig.getAccumuloInstance()));
-    this.conn = zki.getConnector(fluoConfig.getAccumuloUser(),
-        new PasswordToken(fluoConfig.getAccumuloPassword()));
+        new ClientConfiguration().withZkHosts(accumuloZookeepers).withInstance(accumuloInstance));
+    this.conn = zki.getConnector(accumuloUser, new PasswordToken(accumuloPassword));
     this.table = table;
   }
 

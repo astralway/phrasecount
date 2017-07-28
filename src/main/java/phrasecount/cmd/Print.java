@@ -28,7 +28,11 @@ public class Print {
     fluoConfig.setApplicationName(args[1]);
 
     try (FluoAdmin admin = FluoFactory.newAdmin(fluoConfig)) {
-      PhraseCountTable pcTable = new PhraseCountTable(admin.getSharedConfig(), args[2]);
+      FluoConfiguration appConfig = new FluoConfiguration(admin.getApplicationConfig());
+      PhraseCountTable pcTable = new PhraseCountTable(appConfig.getAccumuloZookeepers(),
+                                                      appConfig.getAccumuloInstance(),
+                                                      appConfig.getAccumuloUser(),
+                                                      appConfig.getAccumuloPassword(), args[2]);
       for (PhraseAndCounts phraseCount : pcTable) {
         System.out.printf("%7d %7d '%s'\n", phraseCount.docPhraseCount, phraseCount.totalPhraseCount,
                           phraseCount.phrase);
