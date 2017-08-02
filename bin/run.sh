@@ -4,9 +4,9 @@ BIN_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 PC_HOME=$( cd "$( dirname "$BIN_DIR" )" && pwd )
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-  export SED="sed -i .bak"
+  sed_cmd="sed -i .bak"
 else
-  export SED="sed -i"
+  sed_cmd="sed -i"
 fi
 
 # stop if any command fails
@@ -17,16 +17,16 @@ if [ "$#" -ne 1 ]; then
   exit 
 fi
 
-#set the following to a directory containing text files
-TXT_DIR=$1
-if [ ! -d "$TXT_DIR" ]; then
-  echo "Document directory $TXT_DIR does not exist" 
+# set the following to a directory containing text files
+txt_dir=$1
+if [ ! -d "$txt_dir" ]; then
+  echo "Document directory $txt_dir does not exist" 
   exit 1
 fi
 
 #ensure $FLUO_HOME is set
 if [ -z "$FLUO_HOME" ]; then
-  echo '$FLUO_HOME must be set!'
+  echo "$FLUO_HOME must be set!"
   exit 1
 fi
 
@@ -37,7 +37,7 @@ conn_props=$FLUO_HOME/conf/fluo-conn.properties
 
 if [ -f "$app_props" ]; then
   echo "Restarting '$app' application.  Errors may be printed if it's not running..."
-  $FLUO_HOME/bin/fluo stop "$app" || true
+  $fluo stop "$app" || true
   rm "$app_props"
 fi
 
@@ -49,24 +49,23 @@ mkdir -p "$app_lib"
 cp "$PC_HOME/target/phrasecount-0.0.1-SNAPSHOT.jar" "$app_lib"
 (cd "$PC_HOME"; mvn dependency:copy-dependencies -DoutputDirectory="$app_lib")
 
-$SED "s#fluo.connection.application.name=[^ ]*#fluo.connection.application.name=${app}#" "$app_props"
-$SED "s#^.*fluo.observer.init.dir=[^ ]*#fluo.observer.init.dir=${app_lib}#" "$app_props"
+$sed_cmd "s#^.*fluo.observer.init.dir=[^ ]*#fluo.observer.init.dir=${app_lib}#" "$app_props"
 
 # Create export table and output Fluo configuration
-java -cp "$app_lib/*:$("$fluo" classpath)" phrasecount.cmd.Setup "$conn_props" "$app_props" pcExport >> $app_props
+java -cp "$app_lib/*:$("$fluo" classpath)" phrasecount.cmd.Setup "$conn_props" "$app_props" pcExport >> "$app_props"
 
-$fluo init $app $app_props -f
+$fluo init $app "$app_props" -f
 $fluo exec $app org.apache.fluo.recipes.accumulo.cmds.OptimizeTable
 $fluo oracle $app
 $fluo worker $app
 
 # Load data
-$fluo exec $app phrasecount.cmd.Load $conn_props $app $TXT_DIR
+$fluo exec $app phrasecount.cmd.Load "$conn_props" $app "$txt_dir"
 
 # Wait for all notifications to be processed.
 $fluo wait $app
 
 # Print phrase counts
-$fluo exec $app phrasecount.cmd.Print $conn_props $app pcExport
+$fluo exec $app phrasecount.cmd.Print "$conn_props" $app pcExport
 
 $fluo stop $app
