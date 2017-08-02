@@ -31,7 +31,6 @@ if [ -z "$FLUO_HOME" ]; then
 fi
 
 fluo=$FLUO_HOME/bin/fluo
-
 app=phrasecount
 app_props=$FLUO_HOME/conf/${app}.properties
 conn_props=$FLUO_HOME/conf/fluo-conn.properties
@@ -56,19 +55,18 @@ $SED "s#^.*fluo.observer.init.dir=[^ ]*#fluo.observer.init.dir=${app_lib}#" "$ap
 # Create export table and output Fluo configuration
 java -cp "$app_lib/*:$("$fluo" classpath)" phrasecount.cmd.Setup "$conn_props" "$app_props" pcExport >> $app_props
 
-$FLUO_HOME/bin/fluo init $app_props -f
-$FLUO_HOME/bin/fluo exec $app org.apache.fluo.recipes.accumulo.cmds.OptimizeTable
-$FLUO_HOME/bin/fluo oracle $app
-$FLUO_HOME/bin/fluo worker $app
+$fluo init $app $app_props -f
+$fluo exec $app org.apache.fluo.recipes.accumulo.cmds.OptimizeTable
+$fluo oracle $app
+$fluo worker $app
 
 # Load data
-$FLUO_HOME/bin/fluo exec $app phrasecount.cmd.Load $conn_props $app $TXT_DIR
+$fluo exec $app phrasecount.cmd.Load $conn_props $app $TXT_DIR
 
 # Wait for all notifications to be processed.
-$FLUO_HOME/bin/fluo wait $app
+$fluo wait $app
 
 # Print phrase counts
-$FLUO_HOME/bin/fluo exec $app phrasecount.cmd.Print $conn_props $app pcExport
+$fluo exec $app phrasecount.cmd.Print $conn_props $app pcExport
 
-$FLUO_HOME/bin/fluo stop $app
-
+$fluo stop $app
