@@ -2,6 +2,10 @@
 
 BIN_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 PC_HOME=$( cd "$( dirname "$BIN_DIR" )" && pwd )
+conf=$PC_HOME/conf
+logs=$PC_HOME/logs
+mkdir -p $conf
+mkdir -p $logs
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
   sed_cmd="sed -i .bak"
@@ -32,15 +36,16 @@ fi
 
 fluo=$FLUO_HOME/bin/fluo
 app=phrasecount
-app_props=$FLUO_HOME/conf/${app}.properties
+app_props=$conf/${app}.properties
 conn_props=$FLUO_HOME/conf/fluo-conn.properties
 
-if [ -f "$app_props" ]; then
-  echo "Restarting '$app' application.  Errors may be printed if it's not running..."
-  $fluo stop "$app" || true
-  rm "$app_props"
+app_status=$($fluo status -a $app)
+if [[ "$app_status" == "RUNNING" ]]; then
+  echo "Fluo appplication '$app' is already running! It must be stopped first."
+  exit 1
 fi
 
+rm -f $logs/*
 cp "$FLUO_HOME/conf/fluo-app.properties" "$app_props"
 
 app_lib=$PC_HOME/target/lib
@@ -54,18 +59,16 @@ $sed_cmd "s#^.*fluo.observer.init.dir=[^ ]*#fluo.observer.init.dir=${app_lib}#" 
 # Create export table and output Fluo configuration
 java -cp "$app_lib/*:$("$fluo" classpath)" phrasecount.cmd.Setup "$conn_props" "$app_props" pcExport >> "$app_props"
 
-$fluo init $app "$app_props" -f
+$fluo init -a $app -p "$app_props" -f
 $fluo exec $app org.apache.fluo.recipes.accumulo.cmds.OptimizeTable
-$fluo oracle $app
-$fluo worker $app
+$fluo oracle -a $app &> $logs/oracle.log &
+$fluo worker -a $app &> $logs/worker.log &
 
 # Load data
 $fluo exec $app phrasecount.cmd.Load "$conn_props" $app "$txt_dir"
 
 # Wait for all notifications to be processed.
-$fluo wait $app
+$fluo wait -a $app
 
 # Print phrase counts
 $fluo exec $app phrasecount.cmd.Print "$conn_props" $app pcExport
-
-$fluo stop $app
