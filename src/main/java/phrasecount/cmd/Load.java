@@ -29,7 +29,7 @@ public class Load {
       File[] files = new File(args[1]).listFiles();
 
       if (files == null) {
-        System.out.println("Text file dir does not exist: " + args[0]);
+        System.out.println("Text file dir does not exist: " + args[1]);
       } else {
         for (File txtFile : files) {
           if (txtFile.getName().endsWith(".txt")) {
