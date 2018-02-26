@@ -34,7 +34,13 @@ if [ -z "$FLUO_HOME" ]; then
   exit 1
 fi
 
+maven_opts=
+if [ -n "$FLUO_MAVEN" ]; then
+  maven_opts=('-s' "$FLUO_MAVEN")
+fi
+
 fluo=$FLUO_HOME/bin/fluo
+fluo_version=$($fluo version)
 app=phrasecount
 app_props=$conf/${app}.properties
 conn_props=$FLUO_HOME/conf/fluo-conn.properties
@@ -50,9 +56,9 @@ cp "$FLUO_HOME/conf/fluo-app.properties" "$app_props"
 
 app_lib=$PC_HOME/target/lib
 mkdir -p "$app_lib"
-(cd "$PC_HOME"; mvn package -DskipTests)
+(cd "$PC_HOME"; mvn "${maven_opts[@]}" package -DskipTests -Dfluo.version="$fluo_version")
 cp "$PC_HOME/target/phrasecount-0.0.1-SNAPSHOT.jar" "$app_lib"
-(cd "$PC_HOME"; mvn dependency:copy-dependencies -DoutputDirectory="$app_lib")
+(cd "$PC_HOME"; mvn "${maven_opts[@]}" dependency:copy-dependencies -DoutputDirectory="$app_lib" -Dfluo.version="$fluo_version")
 
 $sed_cmd "s#^.*fluo.observer.init.dir=[^ ]*#fluo.observer.init.dir=${app_lib}#" "$app_props"
 
